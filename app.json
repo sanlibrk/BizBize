@@ -1,25 +1,48 @@
 {
   "expo": {
-    "name": "yanyana",
-    "slug": "yanyana",
-    "version": "1.0.0",
+    "name": "Biz Bize",
+    "slug": "biz-bize",
+    "version": "0.1.0",
+    "scheme": "bizbize",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.example.bizbize",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
+      "package": "com.example.bizbize",
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Konumunu yalnızca izninle partnerinle paylaşmak ve anılarına yer eklemek için kullanıyoruz.",
+          "locationAlwaysAndWhenInUsePermission": "Paylaşım açıkken, uygulama arka plandayken de son konumunu yalnızca partnerinle paylaşmak istiyoruz. Paylaşımı istediğin an kapatabilirsin.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Seçtiğin fotoğrafı yalnızca partnerinle ortak anınıza eklemek için kullanıyoruz.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      "expo-router",
+      "expo-splash-screen"
+    ]
   }
 }

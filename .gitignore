@@ -32,6 +32,9 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
+.env.*
+!.env.example
 
 # typescript
 *.tsbuildinfo
@@ -39,3 +42,19 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Firebase local state, compiled Functions and credentials
+**/node_modules/
+firebase/functions/lib/
+.firebase/
+*-debug.log
+firebase-debug.*
+firestore-debug.*
+storage-debug.*
+ui-debug.*
+emulator-data/
+*-service-account*.json
+*serviceAccount*.json
+*firebase-adminsdk*.json
+credentials*.json
+DEVICE_TEST_RESULTS.md

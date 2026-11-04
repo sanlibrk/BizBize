@@ -1,0 +1,4 @@
+.leaflet-tile-pane { filter: saturate(.45) brightness(1.04); }
+.leaflet-container { font-family: system-ui, sans-serif; }
+.leaflet-control-attribution { font-size: 9px !important; background: #fffcf7dc !important; }
+.yanyana-marker:focus { outline: 2px solid #ae596c; border-radius: 50%; }
