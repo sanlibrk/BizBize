@@ -1,0 +1,39 @@
+name: Capture mobile interface preview
+on:
+  push:
+    branches: ['preview/interface-20261106']
+    paths: ['.github/workflows/interface-preview.yml', 'scripts/capture-interface.cjs']
+permissions:
+  contents: write
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx expo export --platform web --output-dir web-preview
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Run app and capture actual screens
+        run: |
+          python3 -m http.server 4173 --directory web-preview >/tmp/bizbize-preview.log 2>&1 &
+          node scripts/capture-interface.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bizbize-web-preview
+          path: |
+            web-preview/
+            preview-screens/
+          retention-days: 3
+      - name: Save screenshots on preview branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add preview-screens
+          git commit -m "Capture actual Biz Bize mobile web interface" || exit 0
+          git push origin HEAD:preview/interface-20261106
