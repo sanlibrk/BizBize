@@ -118,6 +118,30 @@ test('Firebase SDK: Auth + Firestore kuralları + Storage + callable Functions',
     for (let i = 0; i < 5; i++) await assert.rejects(attacker.invoke('joinPair', { code: 'BAD' }), /geçersiz/);
     await assert.rejects(attacker.invoke('joinPair', { code: 'BAD' }), /Çok fazla/);
   });
+  await t.test('Bildirim yalnızca kendi çiftindeki partner içeriği için oluşturulur ve özel kalır', async () => {
+    const reportId = randomUUID();
+    await b.invoke('reportContent', { id: reportId, kind: 'message', content_id: taskId, reason: 'harassment', details: 'Test bildirimi' });
+    await b.invoke('reportContent', { id: reportId, kind: 'message', content_id: taskId, reason: 'harassment' });
+    assert.equal((await adminDb.doc(`reports/${reportId}`).get()).data()!.status, 'open');
+    await assert.rejects(getDoc(doc(a.db, 'reports', reportId)));
+    await assert.rejects(setDoc(doc(b.db, 'reports', randomUUID()), { reporter_id: b.uid }));
+    await assert.rejects(c.invoke('reportContent', { id: randomUUID(), kind: 'message', content_id: taskId, reason: 'harassment' }));
+    await assert.rejects(a.invoke('reportContent', { id: randomUUID(), kind: 'message', content_id: taskId, reason: 'other' }));
+  });
+  await t.test('Engelleme iki yönlü yeniden eşleşmeyi önler ve paylaşım erişimini kapatır', async () => {
+    const d = await account(), e = await account();
+    const invite = await d.invoke<{ code: string }>('createInvite');
+    await e.invoke('joinPair', { code: invite.code });
+    const pairId = (await getDoc(doc(d.db, 'users', d.uid))).data()!.couple_id;
+    await d.invoke('blockPartner');
+    assert.equal((await getDoc(doc(e.db, 'users', e.uid))).data()!.couple_id, null);
+    await assert.rejects(getDoc(doc(e.db, 'couples', pairId)));
+    const next = await d.invoke<{ code: string }>('createInvite');
+    await assert.rejects(e.invoke('joinPair', { code: next.code }), /kullanılamıyor/);
+    await d.invoke('disconnectPair');
+    const reverse = await e.invoke<{ code: string }>('createInvite');
+    await assert.rejects(d.invoke('joinPair', { code: reverse.code }), /kullanılamıyor/);
+  });
   await t.test('Eşleşmeyi bitirmek iki kişinin veri ve fotoğraf erişimini kapatır ve dosyayı temizler', async () => {
     await a.invoke('disconnectPair');
     assert.equal((await getDoc(doc(b.db, 'users', b.uid))).data()!.couple_id, null);
@@ -133,3 +157,4 @@ test('Firebase SDK: Auth + Firestore kuralları + Storage + callable Functions',
   await Promise.all(clientApps.map(app => deleteApp(app)));
   await adminApp.delete();
 });
+

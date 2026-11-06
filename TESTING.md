@@ -9,6 +9,7 @@ npm ci
 npm run typecheck
 npm run lint
 npm test
+npm run test:release
 npm --prefix firebase/functions ci
 npm --prefix firebase/functions run build
 ```
@@ -67,3 +68,8 @@ iOS export yalnızca JavaScript/varlık paketidir; imzalı native derleme veya T
 Cihaz adımları: [IPHONE_TEST.md](IPHONE_TEST.md). Sonuç şablonu: [DEVICE_TEST_RESULTS.md](DEVICE_TEST_RESULTS.md). Başarılı/başarısız/atlanmış sonuçlarını ayrı kaydedin; anahtar ve kişisel veri eklemeyin.
 
 [README'ye dön](README.md)
+
+
+## Yayın ve kötüye kullanım kontrolleri
+
+`test:release` bağımlılıksız Node testleriyle emülatör/yer tutucu yapılandırmasını reddetmeyi ve içerik filtre kararlarını denetler. Entegrasyon testi özel bildirim kuyruğunu, kendi içeriğini/başka çift içeriğini bildirme reddini ve engelleme sonrası iki yönlü eşleşme engelini de sınar. Gerçek Cloud Vision servisi emülatörde çağrılmaz; bulut kabulü ayrıca yapılmalıdır.

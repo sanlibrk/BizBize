@@ -30,17 +30,21 @@ if (Platform.OS !== 'web' && !TaskManager.isTaskDefined(LOCATION_TASK)) {
   });
 }
 export async function startSharing(context: Context, refresh: () => void, background: boolean) {
+  // Switching to foreground-only must stop a previously enabled background task.
+  if (!background && Platform.OS !== 'web' && await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK)) {
+    await Location.stopLocationUpdatesAsync(LOCATION_TASK);
+  }
   const permission = await Location.requestForegroundPermissionsAsync();
   if (permission.status !== 'granted') throw new Error('Konum izni verilmedi. Paylaşım kapalı. İzni cihaz ayarlarından değiştirebilirsin.');
   // Obtain a real fix before changing server consent.
   const fix = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
   const consent = await call<{ version: string }>('setLocationSharing', { enabled: true });
-  await AsyncStorage.setItem(CONTEXT_KEY, JSON.stringify({ ...context, version: consent.version }));
   onFix = refresh;
   const currentGeneration = ++generation;
   foreground?.remove();
   foreground = null;
   try {
+    await AsyncStorage.setItem(CONTEXT_KEY, JSON.stringify({ ...context, version: consent.version }));
     await publish(fix, currentGeneration);
     foreground = await Location.watchPositionAsync({ accuracy: Location.Accuracy.Balanced, distanceInterval: 15, timeInterval: 15000 },
       position => { void publish(position, currentGeneration).catch(() => refresh()); });
@@ -58,9 +62,11 @@ export async function startSharing(context: Context, refresh: () => void, backgr
   return 'Arka plan paylaşımı etkin. Güncelleme sıklığını iOS, pil ve bağlantı koşulları belirler.';
 }
 export async function stopSharing() {
-  await haltLocalTracking();
+  let localFailed = false;
+  try { await haltLocalTracking(); } catch { localFailed = true; }
   try { await call('setLocationSharing', { enabled: false }); }
-  catch { throw new Error('Bu cihazda konum durduruldu. Firebase’e ulaşılamadı; paylaşımı kapatmayı tekrar dene.'); }
+  catch { throw new Error('Sunucuda paylaşımın kapatıldığı doğrulanamadı. İnternete bağlanıp tekrar dene; cihaz konum iznini de kapatabilirsin.'); }
+  if (localFailed) throw new Error('Sunucuda paylaşım kapatıldı. Cihaz konum servisi durdurulamadı; konum iznini cihaz ayarlarından kapat.');
 }
 export async function haltLocalTracking() {
   ++generation;
@@ -84,3 +90,4 @@ export async function resumeSharing(context: Context, refresh: () => void) {
   foreground = await Location.watchPositionAsync({ accuracy: Location.Accuracy.Balanced, distanceInterval: 15, timeInterval: 15000 },
     fix => { void publish(fix, currentGeneration).catch(() => refresh()); });
 }
+

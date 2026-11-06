@@ -81,6 +81,8 @@ Emülatör host alanı yalnızca `127.0.0.1`, `localhost` veya `10.0.2.2` kabul 
 - **permission-denied:** E-posta doğrulamasını, aktif eşleşmeyi ve kuralların doğru projeye dağıtıldığını kontrol edin.
 - **Functions bulunamıyor:** Proje kimliği, `europe-west1` bölgesi ve dağıtım sonucunu kontrol edin.
 - **Anılar yüklenmiyor:** Storage kovasını, kurallarını ve Firestore indekslerinin oluşturulma durumunu kontrol edin.
-- **Eski hazırlık kontrolü:** `npm run ios:check` betiği hâlâ Supabase alanlarını denetler. Firebase bağlantısının kanıtı olarak kullanmayın; bu rehberdeki adımları ve cihaz testini esas alın.
+- **Hazırlık kontrolü:** `npm run ios:check` Firebase genel değerlerini, emülatörün kapalı olmasını, bundle identifier ve EAS proje bağlantısını denetler; canlı bağlantıyı kanıtlamaz.
+- **Fotoğraf güvenlik kontrolü:** Bulut yüklemeleri Cloud Vision SafeSearch gerektirir. [Moderasyon kurulumunu](MODERATION.md) tamamlayın; hizmet kapalıysa fotoğraf yüklemesi reddedilir.
 
 [README'ye dön](../README.md)
+
