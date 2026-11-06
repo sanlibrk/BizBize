@@ -21,11 +21,11 @@ def tap(label,timeout=30):
 end=time.time()+120
 while time.time()<end:
     if find('SADECE İKİNİZE') or find('Aynı hikâyenin'):break
-    for label in ['Continue','Got it','Dismiss']:
+    for label in ['Continue','Got it','Dismiss','Close']:
         if find(label):tap(label,5)
     time.sleep(3)
 else:
-    capture('error.png');raise RuntimeError('Native welcome did not appear')
+    print((root/'last-ui.xml').read_text());capture('error.png');raise RuntimeError('Native welcome did not appear')
 capture('01-welcome.png')
 for _ in range(4):
     if find('Örnek dünyayı keşfet'):break
