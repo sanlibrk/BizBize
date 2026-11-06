@@ -1,0 +1,60 @@
+name: Native Android interface
+on:
+  push:
+    branches: ['preview/interface-20261106']
+    paths: ['.github/workflows/android-interface.yml', 'scripts/capture-android.py']
+permissions:
+  contents: write
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Download Expo Go SDK 58
+        run: |
+          curl -fsSL https://exp.host/--/api/v2/versions -o /tmp/versions.json
+          node -e "let x=require('/tmp/versions.json');let v=(x.sdkVersions||x.data?.sdkVersions)?.['58.0.0'];if(!v?.androidClientUrl)throw Error('SDK58 client not found');require('fs').writeFileSync('/tmp/apk-url',v.androidClientUrl)"
+          curl -fL "$(cat /tmp/apk-url)" -o /tmp/expo.apk
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Start Metro
+        run: |
+          CI=1 npx expo start --go --host localhost --port 8081 >/tmp/metro.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8081/status && break; sleep 2; done
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: |
+            adb reverse tcp:8081 tcp:8081
+            adb install -r /tmp/expo.apk
+            adb shell am start -a android.intent.action.VIEW -d exp://127.0.0.1:8081 host.exp.exponent
+            python3 scripts/capture-android.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bizbize-android-interface
+          path: android-screens/
+          retention-days: 3
+      - name: Save emulator screenshots
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add android-screens
+          git commit -m "Capture real Android emulator screens" || exit 0
+          git pull --rebase origin preview/interface-20261106
+          git push origin HEAD:preview/interface-20261106
