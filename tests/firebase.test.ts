@@ -149,6 +149,11 @@ test('Firebase SDK: Auth + Firestore kuralları + Storage + callable Functions',
     await assert.rejects(getBytes(ref(b.storage, photoPath)));
     assert.equal((await adminDb.doc(`couples/${cid}`).get()).exists, false);
   });
+  await t.test('E-posta doğrulaması tamamlanmamış hesap da kendini silebilir', async () => {
+    const pending = await account(false);
+    await pending.invoke('deleteAccount');
+    await assert.rejects(adminAuth.getUser(pending.uid));
+  });
   await t.test('Hesap silme Auth hesabını ve özel kullanıcı kaydını kaldırır', async () => {
     await c.invoke('deleteAccount');
     await assert.rejects(adminAuth.getUser(c.uid));

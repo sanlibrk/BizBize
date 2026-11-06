@@ -20,6 +20,7 @@ jobs:
       - run: npm run lint
       - run: npm run test:release
       - run: npm test
+      - run: node scripts/check-native-config.mjs
       - run: npm run export:web
       - run: npm run export:ios
   firebase:
