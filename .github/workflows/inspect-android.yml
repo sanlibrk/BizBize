@@ -1,0 +1,26 @@
+name: Inspect emulator startup
+on:
+  push:
+    branches: ['preview/interface-20261106']
+    paths: ['.github/workflows/inspect-android.yml']
+permissions:
+  contents: write
+  actions: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: bizbize-android-interface
+          run-id: 42183633708
+          github-token: ${{ github.token }}
+          path: android-diagnostic
+      - run: cat android-diagnostic/last-ui.xml
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add android-diagnostic
+          git commit -m "Record Android emulator startup diagnostic"
+          git push origin HEAD:preview/interface-20261106
