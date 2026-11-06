@@ -119,14 +119,17 @@ export function Provider({ children }: { children: React.ReactNode }) {
   };
   const disconnect = async () => {
     if (preview) { setData(makeDemo(true)); return; }
-    await stopSharing(); await call('disconnectPair'); clearPhotoCache(); await refresh();
+    // Local GPS failures must not prevent the server from revoking both users' access.
+    await haltLocalTracking().catch(() => {});
+    await call('disconnectPair'); clearPhotoCache(); await refresh();
   };
   const deleteAccount = async () => {
     if (preview) { await AsyncStorage.removeItem(DEMO_KEY); await exit(); return; }
-    await stopSharing();
+    await haltLocalTracking().catch(() => {});
     await call('deleteAccount');
     await signOutAccount(); clearPhotoCache(); epoch.current++; setSession(null); setData(EMPTY_DATA);
   };
   return <Context.Provider value={{ ready, session, preview, data, userId, coupleId, sync, error, setError, openPreview, exit, refresh, send, complete, addMemory, removeMemory, disconnect, deleteAccount }}>{children}</Context.Provider>;
 }
 export function useApp() { const value = useContext(Context); if (!value) throw new Error('Provider missing'); return value; }
+

@@ -25,7 +25,7 @@ npx expo start --dev-client --lan
 
 Arka plan konumu için geliştirme derlemesi gerekir; Expo Go ve web önizlemesi bu kabulün yerine geçmez. Windows'ta yerel iOS Simulator/Xcode çalışmaz; EAS bulut derlemesi kullanılabilir.
 
-**Hazırlık betiğinin sınırı:** `npm run ios:check` hâlâ eski Supabase alanlarını denetler. Firebase hazır oluşunu değerlendirmek için kullanmayın. Önceki belgelerde geçen `configure-ios.ps1` bu depoda bulunmaz.
+**Hazırlık kontrolü:** `npm run ios:check` Firebase, EAS ve iOS alanlarını değerleri yazdırmadan denetler. `.env` içinde `BIZBIZE_IOS_BUNDLE_IDENTIFIER` ve `EAS_PROJECT_ID` alanlarını gerçek kimliklerle doldurun. Kontrolün geçmesi gerçek cihaz testinin yerine geçmez. Fotoğraf testinden önce [moderasyon kurulumunu](docs/MODERATION.md) tamamlayın.
 
 ## Test oturumu
 
@@ -51,3 +51,4 @@ iOS, arka plan iznini ilk istekte vermeyebilir. Ayarlar → **Biz Bize** → Kon
 [DEVICE_TEST_RESULTS.md](DEVICE_TEST_RESULTS.md) tablosuna cihaz, iOS sürümü, derleme/commit ve sonuçları yazın. Tam koordinat, e-posta, UDID, parola veya anahtar kaydetmeyin. İki cihazda ön plan ve arka plan ölçümleri gözlenmeden canlı konum kabulünü geçti olarak işaretlemeyin.
 
 [README'ye dön](README.md)
+

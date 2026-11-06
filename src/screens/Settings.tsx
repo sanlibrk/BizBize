@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { ScrollView, View, Text } from 'react-native';
 import { MapPin, ShieldCheck, LogOut, Radio, Trash2, Unlink, Check } from 'lucide-react-native';
 import { useApp } from '../store';
@@ -8,6 +9,7 @@ import { locationState, relativeTime } from '../domain';
 
 export default function Settings({ close }: { close: () => void }) {
   const app = useApp();
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
   const [confirm, setConfirm] = useState<'disconnect' | 'delete' | null>(null);
@@ -30,6 +32,7 @@ export default function Settings({ close }: { close: () => void }) {
       <Body muted style={{ fontSize: 11 }}>iOS arka plan paylaşımı için geliştirme derlemesi ve “Her Zaman” izni gerekir. Güncellemeler kesintisiz takip garantisi vermez. Uygulama zorla kapatılırsa güncellemeler durabilir. Eski ölçümler haritada soluk görünür.</Body>
     </View>
     <View style={card}><View style={{ flexDirection: 'row', gap: 9, alignItems: 'center' }}><ShieldCheck color={C.pink} size={20} /><Heading size={23}>İkinizin özel alanı</Heading></View><Body muted>Fotoğraflar, mesajlar ve konumlar çiftinize ait Firebase erişim kurallarıyla korunur. Mesajlar uçtan uca şifreli değildir; hizmet altyapısında işlenir. Eşleşmeyi bitirmek ortak alana erişimi iki kişi için de sonlandırır.</Body><Body muted style={{ fontSize: 11 }}>Davet kodunu yalnızca partnerinle paylaş. Fotoğraflar oturumunla indirilir; herkese açık kalıcı bağlantı oluşturulmaz. İndirilmiş kopyalar geri alınamaz.</Body></View>
+    <View style={card}><Heading size={23}>Gizlilik ve destek</Heading><Button title="Gizlilik politikası" secondary onPress={() => router.push('/legal')} /><Button title="Kullanım koşulları" secondary onPress={() => router.push({ pathname: '/legal', params: { page: 'terms' } })} /><Button title="İçerik bildir / partneri engelle" secondary onPress={() => router.push('/report')} /></View>
     <View style={{ gap: 10 }}><Body muted>{app.preview ? 'Hesap kullanılmıyor' : app.session?.user.email}</Body><Button title={app.preview ? 'Önizlemeden çık' : 'Çıkış yap'} secondary icon={LogOut} busy={busy} onPress={() => void run(async () => { await app.exit(); close(); })} />
       {app.preview && <Button title="Boş başlangıcı dene" secondary onPress={() => void run(async () => { await app.openPreview(true); close(); })} />}
       <Button title="Eşleşmeyi bitir" secondary icon={Unlink} disabled={busy} onPress={() => setConfirm('disconnect')} /><Button title={app.preview ? 'Yerel önizleme verisini sil' : 'Hesabımı sil'} secondary icon={Trash2} disabled={busy} onPress={() => setConfirm('delete')} />
@@ -40,3 +43,4 @@ export default function Settings({ close }: { close: () => void }) {
   </ScrollView>;
 }
 const card = { backgroundColor: C.white, borderWidth: 1, borderColor: C.line, borderRadius: 21, padding: 19, gap: 13 } as const;
+

@@ -51,6 +51,7 @@ Davet kodu 6 rastgele bayttan üretilen 12 onaltılık karakterdir; sunucuda SHA
 | Anı/fotoğraf | `uploadMemoryPhoto`, `discardUpload`, `addMemory`, `deleteMemory` |
 | Konum | `setLocationSharing`, `publishLocation` |
 | Hesap | `deleteAccount` |
+| Güvenlik | `reportContent`, `blockPartner` |
 
 Görevle anı ilişkilendirme transaction içinde yapılır. Fotoğraf yükleme ve Firestore kaydı ayrı adımlardır; kayıt başarısız olursa istemci `discardUpload` ile sahipsiz yüklemeyi kaldırmayı dener.
 
@@ -71,3 +72,8 @@ Hesap silme bu temizliğin ardından kullanıcı belgesini, hız sınırı kayd�
 Görünen marka **Biz Bize**'dir. `demo-yanyana`, Functions codebase adı ve bazı yerel depolama/görev anahtarları önceki teknik adları korur. Bunların topluca yeniden adlandırılması kayıtlı verileri, görevleri veya dağıtımı etkileyebilir; belge güncellemesinde değiştirilmez.
 
 [README'ye dön](../README.md)
+
+
+## İçerik güvenliği
+
+Bulut fotoğraf yüklemesi, Storage kaydından önce Cloud Vision SafeSearch kontrolünden geçer. Raporlar istemciye kapalı `reports` koleksiyonunda, bildirim hız sınırları `reportLimits` altında tutulur. `blocks` kayıtları iki yönlü yeniden eşleşmeyi transaction içinde engeller. [İşletim ve sınırlar](MODERATION.md).

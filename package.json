@@ -52,7 +52,11 @@
     "export:web": "expo export --platform web",
     "export:ios": "expo export --platform ios",
     "ios:check": "node scripts/ios-preflight.mjs",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "test:release": "node --test tests/*.test.mjs",
+    "test:firebase": "firebase emulators:exec --project demo-yanyana --only auth,firestore,storage,functions \"npm test\"",
+    "eas-build-post-install": "node scripts/eas-preflight.mjs",
+    "functions:build": "npm --prefix firebase/functions run build"
   },
   "overrides": {
     "@firebase/app": "0.16.2",

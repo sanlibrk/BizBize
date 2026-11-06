@@ -8,7 +8,7 @@
 
 Çiftler için Türkçe, iOS odaklı bir Expo / React Native uygulaması.
 
-[Başlangıç](#hızlı-başlangıç) · [Firebase kurulumu](docs/FIREBASE_SETUP.md) · [Mimari](docs/ARCHITECTURE.md) · [Test rehberi](TESTING.md) · [iPhone testi](IPHONE_TEST.md)
+[Başlangıç](#hızlı-başlangıç) · [Firebase kurulumu](docs/FIREBASE_SETUP.md) · [Mimari](docs/ARCHITECTURE.md) · [Test rehberi](TESTING.md) · [iPhone testi](IPHONE_TEST.md) · [Yayın hazırlığı](docs/RELEASE_CHECKLIST.md)
 
 ![Sürüm](https://img.shields.io/badge/sürüm-0.1.0-AE596C)
 ![Expo](https://img.shields.io/badge/Expo-SDK_58-000020)
@@ -35,6 +35,7 @@ Biz Bize, iki kişinin ortak anılarını fotoğraf, not, tarih ve konumla sakla
 | Mesajlar | Ortak sohbet, görev gönderme ve görev tamamlama |
 | Anılar | Fotoğraf, not, tarih ve yer; görevi fotoğraflı anıya dönüştürme |
 | Albüm | Tarih sıralı anılar; aynı kaydı haritada görüntüleme |
+| Güvenlik | İçerik bildirme, partner engelleme, gizlilik ve kullanım koşulları |
 | Hesap yönetimi | Kendi anısını silme, eşleşmeyi bitirme, hesap silme |
 | Yerel önizleme | Hesapsız örnek dünya ve boş başlangıç; canlı olmayan konumlar açıkça etiketlenir |
 
@@ -102,6 +103,9 @@ Veri yolları, fotoğraf erişimi ve sunucu işlemleri için [mimari rehberine](
 | `npm run android` | Android başlatma |
 | `npm run typecheck` | TypeScript denetimi |
 | `npm run lint` | ESLint denetimi |
+| `npm run ios:check` | Firebase / EAS / iOS hazırlık denetimi |
+| `npm run test:release` | Yayın yapılandırması ve içerik güvenliği testleri |
+| `npm run test:firebase` | Emülatör entegrasyonu |
 | `npm test` | Testler; Firebase entegrasyonu emülatör yoksa atlanır |
 | `npm run export:web` | Web paketi |
 | `npm run export:ios` | iOS JavaScript paketi; imzalı native derleme üretmez |
@@ -121,8 +125,11 @@ Emülatör testlerinin tam komutu ve kabul ölçütleri [TESTING.md](TESTING.md)
 
 ## Katkı ve sorun bildirimi
 
+App Store metinleri, App Privacy, inceleme notları ve kalan adımlar [yayın hazırlığında](docs/RELEASE_CHECKLIST.md) listelenir. [Gizlilik politikası](docs/PRIVACY.md), [kullanım koşulları](docs/TERMS.md) ve [destek](docs/SUPPORT.md) herkese açıktır.
+
 Katkı akışı, doğrulama ve hata raporu bilgileri için [CONTRIBUTING.md](CONTRIBUTING.md) dosyasını inceleyin. Gerçek kişilere ait konum, mesaj, fotoğraf veya kimlik bilgilerini issue ve PR içeriklerine eklemeyin.
 
 ## Lisans
 
 [MIT](LICENSE) lisansı kapsamında sunulur.
+
