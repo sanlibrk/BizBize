@@ -1,150 +1,128 @@
-# Yan Yana · 0.1.0
+<div align="center">
 
-Çiftler için Türkçe, iOS odaklı Expo / React Native uygulamasının ilk çalışan sürümü. **Yan Yana bir çalışma adıdır**; mağaza adı veya marka uygunluğu doğrulanmadı.
+<img src="assets/icon.png" alt="Biz Bize uygulama simgesi" width="96" />
 
-## Hemen çalıştır
+# Biz Bize
 
-Node 22.18+ ve npm ile bu klasörde:
+**İkinizin dünyası. Anılarınız, sohbetiniz ve paylaştığınız yerler bir arada.**
 
-```powershell
+Çiftler için Türkçe, iOS odaklı bir Expo / React Native uygulaması.
+
+[Başlangıç](#hızlı-başlangıç) · [Firebase kurulumu](docs/FIREBASE_SETUP.md) · [Mimari](docs/ARCHITECTURE.md) · [Test rehberi](TESTING.md) · [iPhone testi](IPHONE_TEST.md)
+
+![Sürüm](https://img.shields.io/badge/sürüm-0.1.0-AE596C)
+![Expo](https://img.shields.io/badge/Expo-SDK_58-000020)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6)
+![Firebase](https://img.shields.io/badge/backend-Firebase-DD2C00)
+![Lisans](https://img.shields.io/badge/lisans-MIT-527A72)
+
+</div>
+
+## Uygulama hakkında
+
+Biz Bize, iki kişinin ortak anılarını fotoğraf, not, tarih ve konumla saklayabildiği; sohbet edebildiği ve kendi isteğiyle son konumunu paylaşabildiği özel bir alan sunar. Krem ve pudra tonlarındaki arayüz; **Harita**, **Mesajlar** ve **Albüm** etrafında şekillenir.
+
+Ürünün görünen adı **Biz Bize**, paket adı `biz-bize`, bağlantı şeması `bizbize` ve GitHub depo adı `BizBize` olarak kullanılır. Teknik depo adresi: [sanlibrk/BizBize](https://github.com/sanlibrk/BizBize).
+
+## Özellikler
+
+| Alan | Mevcut uygulama davranışı |
+|---|---|
+| Hesap | E-posta ile kayıt/giriş, e-posta doğrulama ve şifre yenileme |
+| Eşleşme | 24 saat geçerli, tek kullanımlık 12 karakterli davet; en fazla iki hesap |
+| Harita | Partnerlerin paylaştığı son konumlar ve ortak anılar; anı ayrıntısına geçiş |
+| Konum | Ön plan ve isteğe bağlı arka plan paylaşımı; kullanıcı tarafından durdurma |
+| Mesajlar | Ortak sohbet, görev gönderme ve görev tamamlama |
+| Anılar | Fotoğraf, not, tarih ve yer; görevi fotoğraflı anıya dönüştürme |
+| Albüm | Tarih sıralı anılar; aynı kaydı haritada görüntüleme |
+| Hesap yönetimi | Kendi anısını silme, eşleşmeyi bitirme, hesap silme |
+| Yerel önizleme | Hesapsız örnek dünya ve boş başlangıç; canlı olmayan konumlar açıkça etiketlenir |
+
+## Güncel teknik durum
+
+Sürüm `0.1.0` geliştirme aşamasındadır. Güncel backend **Firebase Authentication, Cloud Firestore, Cloud Storage ve callable Cloud Functions** kullanır. Supabase kurulumu bu kaynak ağacına ait değildir.
+
+| Çalışma biçimi | Gereksinim | Kapsam |
+|---|---|---|
+| Yerel önizleme | Node.js ve npm | Hesapsız arayüz, örnek veriler, yerel içerik |
+| Firebase emülatörleri | Node.js 22, Java 21+, Firebase CLI | Yerel Auth, kurallar, Storage ve Functions entegrasyonu |
+| Firebase bulutu | Kullanıcıya ait Firebase projesi ve dağıtım | Gerçek hesaplar ve iki cihaz arasında ortak veri |
+| iOS geliştirme derlemesi | Expo/EAS, Apple imzalama ve fiziksel iPhone | Native harita, GPS ve arka plan konum kabulü |
+
+Kodun bulunması; bulut dağıtımının, iki iPhone testinin veya mağaza kabulünün tamamlandığı anlamına gelmez. Cihaz sonuçları [test kayıt şablonunda](DEVICE_TEST_RESULTS.md) tutulur.
+
+## Hızlı başlangıç
+
+Node.js **22.18 veya üzerini** kullanın; Functions çalışma zamanı Node.js 22'dir.
+
+```bash
+git clone https://github.com/sanlibrk/BizBize.git
+cd BizBize
 npm ci
 npm run web
 ```
 
-Tarayıcıda Expo'nun gösterdiği yerel adresi aç (varsayılan http://localhost:8081). **Örnek dünyayı keşfet** düğmesiyle hesapsız dene. Anahtar gerekmez. Kurulu bağımlılıklar bu çalışma klasöründe hazırdır; mevcut bilgisayarda `npm ci` tekrar gerekli değil.
+Expo'nun gösterdiği yerel adresi açın ve **Örnek dünyayı keşfet** seçeneğini kullanın. Firebase anahtarı gerekmez. Örnek fotoğraflar ve web haritası için internet gerekir.
 
-Önizleme yalnızca bu cihazın yerel deposuna kaydeder. Örnek kişiler, mesajlar ve sabit konumlar açıkça etiketlidir; simüle konumlara güncel zaman yazılmaz. Konum paylaşma düğmeleri devre dışıdır. Örnek fotoğraflar Unsplash'tan, web haritası OpenStreetMap'ten internet üzerinden yüklenir. Önizleme verisi gerçek hesaba taşınmaz. Ayarlar → **Boş başlangıcı dene** içeriksiz ortak alanı açar. Önizleme yeniden açılınca son yerel içerikler geri gelir.
+Önizleme içeriği yalnızca cihazın yerel deposuna kaydedilir; gerçek hesaba aktarılmaz. Örnek konumlar GPS ölçümü değildir. Ayarlardaki **Boş başlangıcı dene** seçeneği içeriksiz ortak alanı gösterir.
 
-## Neler var?
+Gerçek hesaplar için [Firebase kurulum rehberini](docs/FIREBASE_SETUP.md), fiziksel cihaz için [iPhone rehberini](IPHONE_TEST.md) izleyin.
 
-- Karşılama, e-posta ile hesap oluşturma/giriş, e-posta doğrulama ve şifre yenileme bağlantısı.
-- 24 saatlik, tek kullanımlık 12 karakterli davet koduyla en fazla iki hesaplı eşleşme. Yeni kod eskiyi geçersiz kılar; kod denemeleri hesap başına sunucuda sınırlıdır.
-- **Harita:** iki kişinin izinli son konumu ve geçmiş anıları aynı haritada. İlk açılışta mevcut noktalar kadraja alınır. Anılar uzaktan nokta/küme, yakından fotoğraf; dokununca tarih, not, yer ve fotoğraf.
-- **Canlı konum:** gerçek GPS ölçümü, ön plan izni ve isteğe bağlı arka plan izni; kişinin kendi paylaşımını durdurması. Son ölçüm zamanı ve yaklaşık doğruluk. İki dakikayı aşan veya geçersiz zamanlı ölçümler eski gösterilir. “Eski” kesin çevrimdışı tespiti değildir.
-- **Mesajlar:** çiftin ortak sohbeti; görev kartı gönderme ve tamamlama. Göreve fotoğraf + tarih + yer eklemek tek işlemde ortak anı oluşturur.
-- **Albüm:** tarihe göre fotoğraf kartları; anıdan haritadaki noktaya geçiş. Harita ile aynı veri kaydı.
-- Anı sahibinin kendi anısını silmesi, eşleşmeyi bitirme ve uygulama içinden hesap silme.
-- Krem/pudra arayüz, yerel iOS haritası (MapKit), telefon genişliğinde web önizlemesi.
+## Teknoloji ve proje yapısı
 
-## Önizleme ile gerçek çalışma arasındaki fark
+Expo SDK 58 · React 19.3 · React Native 0.88 · TypeScript 6 · Expo Router · Firebase JS SDK 12 · iOS MapKit / react-native-maps · web üzerinde Leaflet · SecureStore.
 
-| Alan | Bu bilgisayarda doğrulanan | Gerçek kullanıma geçmek için |
-|---|---|---|
-| Arayüz / mesaj / görev / anı / albüm | Çalışan yerel önizleme | Hazır |
-| Hesaplar, iki cihazlı ortak veri | Entegrasyon kodu hazır; canlı hizmete bağlanmadı | Supabase projesi, şema, iki genel ortam değeri |
-| Veri ayrımı ve izinler | Gerçek PostgreSQL motorunda yerel RLS testleri geçti | Aynı şemayı Supabase'e uygulayıp üç hesapla uçtan uca doğrula |
-| Canlı GPS / arka plan konumu | Native kod, izinler, görev kaydı ve iOS yapılandırması hazır | İmzalı geliştirme derlemesi, iki iPhone ve izin testi |
-| iOS | Hermes JavaScript paketi üretildi | EAS/Xcode native derlemesi, Apple imzalama, cihaz testi |
-| Hesap silme | Edge Function ve tekrar deneme kaydı hazır | İşlevi dağıt; gerçek Auth/Storage ile doğrula |
-
-**Gerçek iOS native derlemesi, iki cihazlı canlı GPS, Supabase Realtime ağı ve App Store yayını bu oturumda yapılmadı.**
-
-## Supabase kurulumu
-
-1. Kendi Supabase hesabında yeni bir proje oluştur. Mevcut, başka işlere ait veritabanına bu ilk şemayı uygulama.
-2. SQL Editor'da `supabase/migrations/001_initial.sql` dosyasını bir kez çalıştır. Bu işlem tabloları, RLS kurallarını, sunucu işlevlerini, özel `memories` deposunu ve Realtime yayınını oluşturur. Demo verisi eklemez.
-3. `.env.example` dosyasını `.env` adıyla kopyala ve proje URL'si ile **publishable** anahtarı yaz. Mobil uygulamaya `service_role` / secret anahtar koyma. `EXPO_PUBLIC_*` değerleri uygulamadan okunabilir; güvenlik RLS ve kullanıcı oturumundan gelir.
-4. Supabase Auth → URL Configuration → Redirect URLs listesine `yanyana://auth` ekle. E-posta doğrulamasını açık tut. Şifre için en az 8 karakter ve uygun Auth hız sınırları belirle. Gerçek e-posta teslimi için kendi SMTP yapılandırmanı ekle.
-5. Supabase CLI'ı kendi hesabınla kullanarak hesap silme işlevini dağıt:
-
-```powershell
-npx supabase login
-npx supabase functions deploy delete-account --project-ref PROJE_REFERANSI
+```text
+src/
+  app/                 Expo Router rotaları
+  screens/             Karşılama, eşleşme, harita/sohbet/albüm ve ayarlar
+  components/          Ortak arayüz ve platforma özel harita
+  lib/                 Firebase, kimlik doğrulama, veri ve konum istemcileri
+  store.tsx            Oturum, önizleme ve ortak uygulama durumu
+  domain.ts            Saf iş kuralları
+firebase/
+  functions/src/       Sunucu doğrulaması ve callable işlemler
+  firestore.rules      Belge erişim kuralları
+  firestore.indexes.json
+  storage.rules        Fotoğraf erişim kuralları
+tests/                 İş kuralı ve Firebase emülatör testleri
+scripts/               Hazırlık ve bulut bağlantı yardımcıları
+docs/                  Kurulum ve mimari belgeleri
 ```
 
-İşlev platform kapısına güvenmek yerine gelen Bearer token'ını `auth.getUser()` ile doğrular. `config.toml` bu nedenle `verify_jwt = false` içerir. İşlevin hizmet anahtarı yalnızca Supabase sunucu ortamında kalır. Doğrulanmış kullanıcı olmadan silme yapılamaz.
+Veri yolları, fotoğraf erişimi ve sunucu işlemleri için [mimari rehberine](docs/ARCHITECTURE.md) bakın.
 
-6. Expo'yu yeniden başlat (`npx expo start --clear`). İki ayrı e-posta hesabı oluştur. Birincide kod oluştur, ikincide kod gir. Her gerçek çift fotoğrafsız, mesajsız ve konum paylaşımı kapalı başlar.
+## Geliştirme komutları
 
-Web, arayüz ve hesap akışının geliştirme önizlemesidir. Ürünün hedefi iOS'tur; e-posta onay/şifre yenileme bağlantılarını mobil geliştirme derlemesinde dene. Linkler URL parçasındaki oturum token'larını SDK'ya aktarır; token loglanmaz. Herhangi bir ücretli hesap veya gizli anahtar bu teslimde oluşturulmadı.
+| Komut | Amaç |
+|---|---|
+| `npm run start` | Expo geliştirme sunucusu |
+| `npm run web` | Web önizlemesi |
+| `npm run ios` | Uygun macOS ortamında iOS başlatma |
+| `npm run android` | Android başlatma |
+| `npm run typecheck` | TypeScript denetimi |
+| `npm run lint` | ESLint denetimi |
+| `npm test` | Testler; Firebase entegrasyonu emülatör yoksa atlanır |
+| `npm run export:web` | Web paketi |
+| `npm run export:ios` | iOS JavaScript paketi; imzalı native derleme üretmez |
 
-## iPhone'da deneme · Windows üzerinden
+Emülatör testlerinin tam komutu ve kabul ölçütleri [TESTING.md](TESTING.md) içindedir.
 
-İki telefonla gerçek testin kısa uygulama rehberi: **`IPHONE_TEST.md`**. Anahtar göstermeyen hazırlık kontrolü: `npm run ios:check`. Yerel değerleri sohbet dışından girmek için `./scripts/configure-ios.ps1` kullanılabilir.
+## Gizlilik ve mevcut sınırlar
 
-Bu proje SDK 58 kullanır. Arka plan konumu için **Expo Go yeterli değildir**; geliştirme derlemesi gerekir. Windows'ta iOS Simulator/Xcode çalışmaz. EAS Build macOS bulut işçileri üzerinden kullanılabilir. Fiziksel iPhone derlemesinin imzalanması için uygun Apple Developer hesabı gerekir.
+- Ortak verilere erişim, doğrulanmış kullanıcı ve aktif çift üyeliğiyle sınırlandırılır. Paylaşılan veri değişiklikleri sunucu Functions üzerinden doğrulanır.
+- Konum paylaşımı başlangıçta kapalıdır. İzin ve paylaşım rızası gerekir; kapatma işlemi son koordinatı sunucuda sıfırlar. İki dakikayı aşan ölçüm eski gösterilir; bu kesin çevrimdışı tespiti değildir.
+- Canlı konumun yalnızca son kaydı tutulur. Anı koordinatları ortak içeriğin parçasıdır.
+- Fotoğraflar kimlik doğrulamalı Storage SDK istekleriyle alınır; istemci kalıcı indirme bağlantısı dağıtmaz. Daha önce indirilmiş kopyalar geri alınamaz.
+- Native oturum kalıcılığı SecureStore kullanır. `EXPO_PUBLIC_*` değerleri herkese açık istemci yapılandırmasıdır; Admin kimlik bilgileri uygulamaya konulmaz.
+- Mesajlar uçtan uca şifreli değildir. Push bildirimi, çevrimdışı gönderim kuyruğu ve eski kayıtlar için sayfalama mevcut değildir. Mesaj ve anı sorguları 200 kayıtla sınırlıdır.
+- Arka plan GPS sıklığı işletim sistemi, izinler, ağ ve pil koşullarına bağlıdır. Kesintisiz takip garantisi verilmez.
+- iOS önceliklidir. Android native haritası ek Google Maps yapılandırması ve cihaz testi gerektirir. Web, native konum kabul testinin yerine geçmez.
 
-1. `app.json` içindeki `com.example.yanyana` değerini sana ait, benzersiz bir bundle identifier ile değiştir. Gerekirse `slug` ve çalışma adını değiştir.
-2. Expo hesabınla EAS projesini bağla; EAS ortamına `.env` içindeki iki genel değeri de tanımla. Yerel `.env` dosyası git/dağıtım dışında tutulur.
+## Katkı ve sorun bildirimi
 
-```powershell
-npx eas-cli@latest login
-npx eas-cli@latest init
-npx eas-cli@latest device:create
-npx eas-cli@latest build --platform ios --profile development
-```
+Katkı akışı, doğrulama ve hata raporu bilgileri için [CONTRIBUTING.md](CONTRIBUTING.md) dosyasını inceleyin. Gerçek kişilere ait konum, mesaj, fotoğraf veya kimlik bilgilerini issue ve PR içeriklerine eklemeyin.
 
-3. EAS'in yönlendirdiği Apple imzalama ve cihaz kaydını kendi hesabında tamamla. Oluşan geliştirme uygulamasını iPhone'a kur; istenirse iOS Developer Mode'u kullanıcı olarak aç.
-4. Bilgisayar ve iPhone aynı ağdayken:
+## Lisans
 
-```powershell
-npx expo start --dev-client --lan
-```
-
-5. Uygulamada Ayarlar → **Uygulama açıkken paylaş**. Sonra istersen **Arka planda da paylaş** ve iOS'un “Her Zaman” izni. iOS ilk istekte bu izni vermeyebilir; Ayarlar → Yan Yana → Konum bölümünü kontrol et.
-
-Konum ölçümleri hareket, GPS, ağ, pil ve iOS kararlarına bağlıdır. Zorla kapatma veya izin iptali güncellemeyi durdurabilir. Uygulama açıkça eski zaman damgasını gösterir; kesintisiz veya saniye saniye takip vaadi vermez. Ön planda yaklaşık 15 m, arka planda yaklaşık 20 m hareket eşiği kullanılır; 15/30 sn değerleri işletim sistemine verilen istektir, garanti değildir. iOS arka plan göstergesi açıktır.
-
-Android bu teslimin hedefi değildir. Native Google haritası için ayrıca Google Maps yapılandırması/API anahtarı gerekir; Android cihaz testi yapılmadı.
-
-## Veri ve erişim modeli
-
-- `couple_members.user_id` tekildir; `(couple_id, slot)` en fazla iki kişiyi sınırlar. Doğrudan üyelik yazımı kapalıdır; eşleşme sunucuda kilitli işlemlerle yapılır.
-- Mesaj, anı ve son konum okumaları çift üyeliğiyle sınırlandırılır. İstemci tabloya doğrudan konum/görev güncellemesi yapamaz. Sunucu işlevleri sabit `search_path` kullanır.
-- Davet kodunun düz metni sunucuda saklanmaz; hash + süre + kullanım durumu tutulur. Beş kod denemesi / 15 dakika sınırı vardır. Genel hizmet abuse koruması ayrıca üretim operasyonuna aittir.
-- Konum izni ile sunucudaki paylaşım rızası birlikte gerekir. Durdurmak, cihaz izleyicisini kapatır; sunucu son koordinatı sıfırlar ve paylaşımı kapatır. Geç kalan callback paylaşımı yeniden açamaz. Ağ yoksa sunucu onayı alınamadığı açıkça belirtilir.
-- Fotoğraflar özel depoda `coupleId/userId/memoryId.jpg` yolundadır. Bağlantılar 5 dakika geçerli imzalı URL'dir. Eşleşme bitince yeni erişim kapanır; önceden açılmış URL en fazla bu süre boyunca kullanılabilir. İndirilmiş kopyalar geri alınamaz.
-- Native oturum token'ları SecureStore/Keychain'de; gerçek ortak içerik yerel önizleme deposuna yazılmaz. iOS, arka plan görevine erişim için ilk cihaz kilidi açıldıktan sonra Keychain okumasına izin verir.
-- Realtime değişikliklerine ek olarak 20 sn aralık ve ön plana dönüşte yenileme vardır. Ağ yokken son veriler işaretlenir; gönderme başarısızsa metin taslakta kalır. Çevrimdışı gönderim kuyruğu bu sürümde yoktur. Son 200 sohbet kaydı yüklenir; eski mesajlar için sayfalama henüz yoktur.
-- Mesajlar uçtan uca şifreli değildir. Supabase altyapısında işlenir. Canlı konum geçmişi tutulmaz; kullanıcının eklediği anı koordinatları kalıcı ortak içeriktir.
-
-Eşleşmeyi bitirme ortak veritabanı içeriğini siler. Artık erişilemeyen depo dosyaları için operatör temizliği vardır:
-
-```powershell
-# SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY yalnızca operatör sürecinin ortamında olmalı.
-node scripts/cleanup-storage.mjs          # Sadece kaç dosya olduğunu gösterir
-node scripts/cleanup-storage.mjs --apply  # Silinmiş çiftlerin sahipsiz dosyalarını temizler
-```
-
-Bunu sunucu tarafında düzenli çalıştır; anahtarı mobil `.env` dosyasına ekleme. Temizlik bu oturumda herhangi bir bulut projesine karşı çalıştırılmadı. Hesap silme işlevi ise çiftin erişimini kaldırır, fotoğrafları siler ve Auth hesabını kaldırır. Başarısız dosya silmeleri için tekrar deneme yollarını `account_deletion_jobs` tablosunda saklar.
-
-## Doğrulama
-
-```powershell
-npm run typecheck
-npm run lint
-npm test
-npm run export:web
-npm run export:ios
-```
-
-`tests/security.test.ts`, Supabase Auth ve Storage şemalarının asgari sözleşmesini kurarak **PGlite PostgreSQL motorunda gerçek RLS/SQL yürütür**. Supabase'in ağ, e-posta, Storage HTTP ve WebSocket hizmetlerinin yerine geçmez. Testlerin ayrıntısı ve cihaz kabul adımları `TESTING.md` dosyasında.
-
-2 Kasım 2026 npm denetimi: Expo araç zincirindeki `glob` / `minimatch` kaynaklı **11 orta seviye bildirim**, yüksek/kritik bildirim yok. Otomatik öneri SDK'yı geriye taşıdığı için `audit fix --force` uygulanmadı. Üretim derlemesinden önce Expo'nun uyumlu düzeltmesini ve denetimi tekrar değerlendir. Kilit dosyası teslimde bulunur.
-
-## App Store'a geçiş
-
-Bu sürüm App Store'a yüklenmedi ve mağaza incelemesine hazır olduğu iddia edilmiyor. Gerçek backend ve cihaz kabul testinden sonra kendi geliştirici hesabında:
-
-- Uygun bundle identifier, Apple imzalama, App Store Connect kaydı ve EAS üretim ortamı.
-- Gerçek destek iletişimi, yayımlanmış gizlilik politikası/kullanım koşulları ve App Privacy beyanları. Konum, fotoğraf, mesaj ve hesap verisi kullanımını fiili yapılandırmana göre belirt.
-- Uygulama içi hesap silmenin dağıtılmış işlevle uçtan uca testi; yedek saklama sürelerinin politika ile uyumu.
-- Özel sohbet için istenmeyen içerik bildirme/destek ve kötüye kullanım süreçleri. Eşleşmeyi bitirme mevcut; rapor işleme/moderasyon operasyonu henüz kurulmadı.
-- Konum izni reddedilince diğer özelliklerin çalışması; arka plan kullanımının inceleme notlarında açıklanması; iki inceleme hesabı/eşleşme talimatı.
-- Fotoğrafları, konum izinlerini, düşük pil/ağ kesintisini, büyük yazıyı ve gerçek cihaz ekranlarını kontrol et. Push bildirimleri bu sürümde eklenmedi; kapalı uygulamaya mesaj bildirimi yok.
-
-Sonrasında `npx eas-cli@latest build --platform ios --profile production`, TestFlight kabulü ve kullanıcı tarafından yönetilen mağaza gönderimi. EAS/Apple hesaplarının koşul ve maliyetleri kullanıcıya aittir; bu adımlar burada yürütülmedi.
-
-## Birincil belgeler
-
-- [Expo proje kurulumu](https://docs.expo.dev/get-started/create-a-project/)
-- [Expo Location ve arka plan sınırları](https://docs.expo.dev/versions/latest/sdk/location/)
-- [Expo TaskManager](https://docs.expo.dev/versions/latest/sdk/task-manager/)
-- [EAS Build kurulumu](https://docs.expo.dev/build/setup/)
-- [Supabase React Native Auth](https://supabase.com/docs/guides/auth/quickstarts/react-native)
-- [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security)
-- [Supabase Realtime Postgres Changes](https://supabase.com/docs/guides/realtime/postgres-changes)
-- [Supabase Storage erişimi](https://supabase.com/docs/guides/storage/security/access-control)
-- [Edge Function yetkilendirmesi](https://supabase.com/docs/guides/functions/auth-headers)
-- [Apple inceleme kuralları](https://developer.apple.com/app-store/review/guidelines/)
-- [Apple uygulama içi hesap silme](https://developer.apple.com/support/offering-account-deletion-in-your-app/)
+[MIT](LICENSE) lisansı kapsamında sunulur.

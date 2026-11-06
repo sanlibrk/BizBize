@@ -1,65 +1,53 @@
-# İki iPhone ile gerçek canlı konum testi
+# Biz Bize · İki iPhone ile kabul testi
 
-## Mevcut durum · 2 Kasım 2026
+Bu rehber Firebase kullanan güncel kaynak ağacı içindir. Bir test sonucu veya tamamlanmış native derleme beyanı değildir.
 
-Yerel kontrolde `.env`/Supabase değerleri, Expo oturumu/EXPO_TOKEN, EAS proje bağlantısı ve Supabase CLI oturumu bulunmadı. Bundle identifier hâlâ `com.example.yanyana`. Windows'a bağlı Apple mobil cihaz görülmedi; uzaktaki iPhone'ların varlığı veya Apple Developer üyeliği bu bilgisayardan doğrulanamaz. Anahtar/oturum değerleri yazdırılmadı.
+## Hazırlık
 
-**Gerçek cihaz testi kullanıcının kararıyla ertelendi.** Henüz imzalı iOS uygulaması üretilmedi ve gerçek konum testi başlamadı. Bilgisayar önizlemesiyle devam ediliyor. iOS Hermes paketi üretildi, native derleme yapılmadı. Aşağıdaki adımlar sonraki cihaz testi içindir; bu turda hesap/telefon kurulumu beklenmiyor.
+1. [Firebase kurulumunu](docs/FIREBASE_SETUP.md) bir test projesinde tamamlayın; kuralları, indeksleri ve Functions'ı dağıtın.
+2. `.env.example` alanlarını `.env` içinde doldurun; `EXPO_PUBLIC_FIREBASE_USE_EMULATORS=0` kullanın. Mevcut emülatör istemcisi fiziksel iPhone'un LAN host bağlantısını kabul etmez.
+3. `app.json` içindeki `com.example.bizbize` bundle identifier değerini size ait benzersiz kimlikle değiştirin. Görünen uygulama adı **Biz Bize**, scheme `bizbize`'dir.
+4. Expo hesabınızla EAS projesini bağlayın. EAS `development` ortamına beş genel Firebase alanını ve emülatör anahtarı için `0` değerini ekleyin.
+5. Apple imzalama erişimi ve iki fiziksel iPhone kaydıyla geliştirme derlemesi hazırlayın:
 
-## Bir defalık hazırlık
-
-1. Kendi Supabase projen oluşturulduktan sonra README'deki SQL şemasını uygula ve `delete-account` işlevini dağıt. Auth redirect adresine `yanyana://auth` ekle.
-2. Bu klasörde PowerShell ile yerel değerleri gir. Anahtar sohbete yazılmaz:
-
-```powershell
-./scripts/configure-ios.ps1
-```
-
-Araç Supabase URL'si, maskelenmiş **publishable** anahtar ve sana ait bundle identifier ister. Secret/service_role kabul etmez; mevcut `.env` üzerine yazmaz. Manuel düzenleme de mümkündür.
-
-3. Expo hesabına **kendin** giriş yap ve projeyi bağla:
-
-```powershell
+```bash
 npx eas-cli@latest login
 npx eas-cli@latest init
-```
-
-4. EAS Dashboard → Project → Environment Variables bölümüne yerel `.env` içindeki iki `EXPO_PUBLIC_*` değerini `development` ortamına ekle. Bunlar istemciye gömülen genel değerlerdir. Hizmet anahtarı ekleme.
-5. Apple Developer hesabının imzalama erişimiyle iki iPhone'u kaydet. Aynı `device:create` akışındaki kayıt bağlantısını her iPhone'da açabilirsin. UDID veya hesap şifresi sohbete gönderilmez.
-
-```powershell
 npx eas-cli@latest device:create
-npm run ios:check
 npx eas-cli@latest build --platform ios --profile development
 ```
 
-`ios:check` yalnızca hazır/eksik durumunu gösterir. Backend şemasının uygulanmasını, Apple üyeliğini veya gerçek konum akışını doğrulamaz. Başarılı EAS derlemesinin kurulum bağlantısını kayıtlı iki iPhone'da aç. iOS gerekirse Developer Mode'u kullanıcıdan ister. İmzalama, sözleşme ve hesap doğrulamalarını kullanıcı tamamlar.
+İki telefona geliştirme uygulamasını kurun. Gerekirse iOS Developer Mode'u açın. Aynı ağdaki bilgisayarda:
 
-6. Aynı Wi-Fi üzerinde bilgisayardan başlat:
-
-```powershell
+```bash
 npx expo start --dev-client --lan
 ```
 
-İki telefonda kurulu **geliştirme uygulamasını** aç; Expo'nun verdiği QR/yerel proje bağlantısını kullan. Web önizlemesi ve Expo Go bu testin yerine geçmez. Yerel ağ erişimi kapalıysa bağlantı kurulamaz; ağ ayarlarını kullanıcı kontrol eder.
+Arka plan konumu için geliştirme derlemesi gerekir; Expo Go ve web önizlemesi bu kabulün yerine geçmez. Windows'ta yerel iOS Simulator/Xcode çalışmaz; EAS bulut derlemesi kullanılabilir.
 
-## Test oturumu · yaklaşık 20–30 dakika
+**Hazırlık betiğinin sınırı:** `npm run ios:check` hâlâ eski Supabase alanlarını denetler. Firebase hazır oluşunu değerlendirmek için kullanmayın. Önceki belgelerde geçen `configure-ios.ps1` bu depoda bulunmaz.
 
-Telefonları **A** ve **B** diye adlandır. Farklı iki test e-postası kullan. Kişisel fotoğraf yerine test için seçtiğin bir görsel kullanabilirsin. Konum paylaşımı her telefonda ayrı rızayla açılır.
+## Test oturumu
 
-| Sıra | İşlem | Başarı ölçütü |
+İki ayrı test e-postası kullanın; hesapları doğrulayın. Konum paylaşımı her cihazda ayrı açılır.
+
+| Sıra | İşlem | Beklenen sonuç |
 |---|---|---|
-| 1 | A/B'de hesap oluştur, e-postayı onayla. A kod oluştursun, B girsin. | İkisi aynı boş haritayı açar; paylaşım başlangıçta kapalıdır. |
-| 2 | A ve B → Ayarlar → Uygulama açıkken paylaş; konum izni ver. İki telefonu birkaç yüz metre ayır. | Her haritada iki ayrı kişi işareti ve gerçek ölçüm zamanları görünür. Yaklaşık doğruluk makuldür. |
-| 3 | A yürüsün, B haritayı açık tutsun. | A'nın ölçüm zamanı/koordinatı değişir; B'de güncel ölçüm görünür. Sabit cihazda hareket eşiği nedeniyle yeni ölçüm gelmeyebilir. |
-| 4 | A → Arka planda da paylaş, “Her Zaman” izni ver. A ekranını kilitle, birkaç dakika yürüt; B açık kalsın. | Gerçek arka plan ölçümü B'ye ulaşır. Ölçüm zamanı kaydedilir; belirli saniye aralığı garanti kabul edilmez. A/B yer değiştirerek tekrar et. |
-| 5 | A paylaşımı durdursun. | A işareti B haritasından kalkar; gecikmiş callback geri getiremez. Eşitleme/polling için yaklaşık 20 sn bekleme payı vardır. |
-| 6 | A tekrar paylaşsın; sonra A'nın internetini kes veya uygulamayı zorla kapat. En az 2 dakika bekle. | B son ölçümü soluk ve “eski konum” olarak görür. Yeni zaman üretilmez. Bu durum kesin çevrimdışı tespiti diye sunulmaz. |
-| 7 | A internetini açıp uygulamaya dönsün. | Yeni gerçek ölçüm gelince eski etiketi kalkar. İzin iptal edilmişse paylaşım sürüyor iddiası verilmez. |
-| 8 | Fotoğraf, not, tarih ve yerle bir anı ekle. Haritayı yakınlaştır/uzaklaştır. | İki telefonda albüm ve harita aynı anıyı gösterir; uzaktan nokta/küme, yakından fotoğraf; canlı kişi işaretleri ayrıdır. |
+| 1 | A davet oluştursun, B katılsın | Aynı boş ortak alan; paylaşım kapalı |
+| 2 | İki cihazda ön plan paylaşımı açılsın | İzin sonrası iki gerçek konum ve ölçüm zamanları |
+| 3 | A yürüsün, B haritayı izlesin | Hareket sonrası yeni ölçüm B'ye ulaşır |
+| 4 | A arka plan paylaşımını açsın; ekran kilitliyken yürüsün | B gerçek arka plan ölçümü alır; A/B değiştirerek tekrarlanır |
+| 5 | A paylaşımı durdursun | A işareti B'den kalkar; geç callback geri getirmez |
+| 6 | A yeniden paylaşsın; interneti kesilsin veya uygulama zorla kapatılsın | İki dakika sonra son ölçüm eski görünür; yeni zaman uydurulmaz |
+| 7 | Ağ geri gelsin, uygulama açılsın | Yeni GPS ölçümüyle eski etiketi kalkar |
+| 8 | Mesaj/görev ve fotoğraflı anı eklensin | İki cihazda aynı içerik; anı harita ve albümde açılır |
+| 9 | Konum/fotoğraf izni reddedilsin | Açıklayıcı hata; ilgisiz özellikler kullanılabilir |
+| 10 | Eşleşme bitirilsin ve ayrı test hesaplarıyla hesap silme denensin | Ortak erişim kapanır; sunucu temizliği ve Auth silme doğrulanır |
 
-## Sonucu kaydet
+iOS, arka plan iznini ilk istekte vermeyebilir. Ayarlar → **Biz Bize** → Konum bölümünü kontrol edin. GPS ve arka plan sıklığı işletim sistemi, pil ve ağ kararlarına bağlıdır; sabit saniye aralığı başarı ölçütü değildir.
 
-`DEVICE_TEST_RESULTS.md` dosyasındaki boş tabloya cihaz modeli, iOS sürümü, izin durumu, derleme kimliği ve her adımın geçti/kaldı sonucunu yaz. Tam koordinat, e-posta, UDID, parola veya anahtar ekleme. Ekran görüntüsü paylaşılacaksa kişisel verileri önce kullanıcı olarak kaldır.
+## Sonucu kaydetme
 
-Test ancak her iki telefonda gerçek ön plan **ve arka plan** ölçümü gözlendiğinde geçmiş sayılır. Bir Hermes paketinin üretilmesi veya örnek konumlu haritanın açılması bu sonucu sağlamaz. Sorun varsa hangi adımın, hangi telefon/iOS sürümünde ve ne kadar bekledikten sonra kaldığını belirtmek yeterlidir.
+[DEVICE_TEST_RESULTS.md](DEVICE_TEST_RESULTS.md) tablosuna cihaz, iOS sürümü, derleme/commit ve sonuçları yazın. Tam koordinat, e-posta, UDID, parola veya anahtar kaydetmeyin. İki cihazda ön plan ve arka plan ölçümleri gözlenmeden canlı konum kabulünü geçti olarak işaretlemeyin.
+
+[README'ye dön](README.md)
