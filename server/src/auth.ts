@@ -39,7 +39,7 @@ export function authServices(pool:pg.Pool,cfg:Config){
    await db.query('DELETE FROM email_codes WHERE user_id=$1 AND purpose=$2',[row.id,purpose]);
    await db.query('DELETE FROM mail_outbox WHERE user_id=$1 AND purpose=$2',[row.id,purpose]);
    if(purpose==='verify')await db.query('UPDATE users SET email_verified=true WHERE id=$1',[row.id]);
-   else {await db.query('UPDATE users SET password_hash=$2 WHERE id=$1',[row.id,await passwordHash(newPassword!)]);await db.query('DELETE FROM sessions WHERE user_id=$1',[row.id]);}
+   else {await db.query('UPDATE users SET password_hash=$2,sharing=false,sharing_version=gen_random_uuid() WHERE id=$1',[row.id,await passwordHash(newPassword!)]);await db.query('DELETE FROM locations WHERE user_id=$1',[row.id]);await db.query('DELETE FROM sessions WHERE user_id=$1',[row.id]);}
    return true;
   });if(!result)fail(400,'Kod geçersiz, süresi dolmuş veya deneme sınırına ulaşılmış. Yeni kod iste.');
  }
@@ -80,7 +80,7 @@ export function authServices(pool:pg.Pool,cfg:Config){
   app.post('/v1/auth/password',async req=>{
    const u=await user(req,false),b=z.object({current_password:z.string().min(1).max(128),password:passwordSchema}).strict().parse(req.body);await rate('change-password:'+u.id,5,900);
    if(!await passwordMatches(b.current_password,u.password_hash))fail(403,'Mevcut şifre hatalı.');const pw=await passwordHash(b.password);
-   await transaction(pool,async db=>{await db.query('UPDATE users SET password_hash=$2 WHERE id=$1',[u.id,pw]);await db.query('DELETE FROM sessions WHERE user_id=$1',[u.id]);});return {reset:true};
+   await transaction(pool,async db=>{await db.query('UPDATE users SET password_hash=$2,sharing=false,sharing_version=gen_random_uuid() WHERE id=$1',[u.id,pw]);await db.query('DELETE FROM locations WHERE user_id=$1',[u.id]);await db.query('DELETE FROM sessions WHERE user_id=$1',[u.id]);});return {reset:true};
   });
  }
  return {user,rate,routes,cookie};

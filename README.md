@@ -1,135 +1,92 @@
 <div align="center">
-
-<img src="assets/icon.png" alt="Biz Bize uygulama simgesi" width="96" />
+<img src="assets/icon.png" alt="Biz Bize" width="96" />
 
 # Biz Bize
 
 **İkinizin dünyası. Anılarınız, sohbetiniz ve paylaştığınız yerler bir arada.**
 
-Çiftler için Türkçe, iOS odaklı bir Expo / React Native uygulaması.
+Çiftler için Türkçe, iOS odaklı Expo / React Native uygulaması ve kendi PostgreSQL backend’i.
 
-[Başlangıç](#hızlı-başlangıç) · [Firebase kurulumu](docs/FIREBASE_SETUP.md) · [Mimari](docs/ARCHITECTURE.md) · [Test rehberi](TESTING.md) · [iPhone testi](IPHONE_TEST.md) · [Yayın hazırlığı](docs/RELEASE_CHECKLIST.md)
-
-![Sürüm](https://img.shields.io/badge/sürüm-0.1.0-AE596C)
-![Expo](https://img.shields.io/badge/Expo-SDK_58-000020)
-![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6)
-![Firebase](https://img.shields.io/badge/backend-Firebase-DD2C00)
-![Lisans](https://img.shields.io/badge/lisans-MIT-527A72)
-
+[Hızlı başlangıç](#hızlı-başlangıç) · [Backend kurulumu](docs/BACKEND_SETUP.md) · [Mimari](docs/ARCHITECTURE.md) · [Güvenlik](docs/SECURITY.md) · [Testler](TESTING.md) · [Yayın hazırlığı](docs/RELEASE_CHECKLIST.md)
 </div>
 
-## Uygulama hakkında
+## Ürün
 
-Biz Bize, iki kişinin ortak anılarını fotoğraf, not, tarih ve konumla saklayabildiği; sohbet edebildiği ve kendi isteğiyle son konumunu paylaşabildiği özel bir alan sunar. Krem ve pudra tonlarındaki arayüz; **Harita**, **Mesajlar** ve **Albüm** etrafında şekillenir.
+İki kullanıcı tek kullanımlık davet koduyla eşleşir; sohbet eder, küçük görevler paylaşır ve fotoğraf/not/tarih/konumla ortak anılar oluşturur. Anılar harita ve albümde aynı kaydı gösterir. Son konum paylaşımı her kullanıcı için isteğe bağlıdır ve başlangıçta kapalıdır.
 
-Ürünün görünen adı **Biz Bize**, paket adı `biz-bize`, bağlantı şeması `bizbize` ve GitHub depo adı `BizBize` olarak kullanılır. Teknik depo adresi: [sanlibrk/BizBize](https://github.com/sanlibrk/BizBize).
-
-## Özellikler
-
-| Alan | Mevcut uygulama davranışı |
-|---|---|
-| Hesap | E-posta ile kayıt/giriş, e-posta doğrulama ve şifre yenileme |
-| Eşleşme | 24 saat geçerli, tek kullanımlık 12 karakterli davet; en fazla iki hesap |
-| Harita | Partnerlerin paylaştığı son konumlar ve ortak anılar; anı ayrıntısına geçiş |
-| Konum | Ön plan ve isteğe bağlı arka plan paylaşımı; kullanıcı tarafından durdurma |
-| Mesajlar | Ortak sohbet, görev gönderme ve görev tamamlama |
-| Anılar | Fotoğraf, not, tarih ve yer; görevi fotoğraflı anıya dönüştürme |
-| Albüm | Tarih sıralı anılar; aynı kaydı haritada görüntüleme |
-| Güvenlik | İçerik bildirme, partner engelleme, gizlilik ve kullanım koşulları |
-| Hesap yönetimi | Kendi anısını silme, eşleşmeyi bitirme, hesap silme |
-| Yerel önizleme | Hesapsız örnek dünya ve boş başlangıç; canlı olmayan konumlar açıkça etiketlenir |
-
-## Güncel teknik durum
-
-Sürüm `0.1.0` geliştirme aşamasındadır. Güncel backend **Firebase Authentication, Cloud Firestore, Cloud Storage ve callable Cloud Functions** kullanır. Supabase kurulumu bu kaynak ağacına ait değildir.
-
-| Çalışma biçimi | Gereksinim | Kapsam |
-|---|---|---|
-| Yerel önizleme | Node.js ve npm | Hesapsız arayüz, örnek veriler, yerel içerik |
-| Firebase emülatörleri | Node.js 22, Java 21+, Firebase CLI | Yerel Auth, kurallar, Storage ve Functions entegrasyonu |
-| Firebase bulutu | Kullanıcıya ait Firebase projesi ve dağıtım | Gerçek hesaplar ve iki cihaz arasında ortak veri |
-| iOS geliştirme derlemesi | Expo/EAS, Apple imzalama ve fiziksel iPhone | Native harita, GPS ve arka plan konum kabulü |
-
-Kodun bulunması; bulut dağıtımının, iki iPhone testinin veya mağaza kabulünün tamamlandığı anlamına gelmez. Cihaz sonuçları [test kayıt şablonunda](DEVICE_TEST_RESULTS.md) tutulur.
+**0.2.0 ile Firebase zorunluluğu kaldırıldı.** Güncel hesap ve veri akışları kendi API sunucusunu kullanır. Firebase/Blaze kurulumu veya Google Cloud Vision hesabı gerekmez. Önceki Firebase hesapları ve içerikleri otomatik taşınmaz; mevcut Firebase projesine dokunulmaz.
 
 ## Hızlı başlangıç
 
-Node.js **22.18 veya üzerini** kullanın; Functions çalışma zamanı Node.js 22'dir.
+Node.js **22.18+**, npm ve çalışan **Docker Desktop** gerekir. Proje kökünde:
 
-```bash
-git clone https://github.com/sanlibrk/BizBize.git
-cd BizBize
+```powershell
 npm ci
+npm run backend:up
 npm run web
 ```
 
-Expo'nun gösterdiği yerel adresi açın ve **Örnek dünyayı keşfet** seçeneğini kullanın. Firebase anahtarı gerekmez. Örnek fotoğraflar ve web haritası için internet gerekir.
+- Uygulama: Expo'nun gösterdiği adres, genellikle **http://localhost:8081**.
+- Sunucu kontrolü: **http://localhost:3001/healthz**.
+- Yerel e-posta kutusu: **http://localhost:8025**.
 
-Önizleme içeriği yalnızca cihazın yerel deposuna kaydedilir; gerçek hesaba aktarılmaz. Örnek konumlar GPS ölçümü değildir. Ayarlardaki **Boş başlangıcı dene** seçeneği içeriksiz ortak alanı gösterir.
+`backend:up` PostgreSQL, API ve Mailpit’i başlatır; yerel sırları üretir ve mevcut `.env` dosyasına API adresi yoksa ekler. Var olan farklı bir API adresinin üzerine yazmaz. Docker'ın ilk indirme/derlemesi internet gerektirir. Yerel posta kutusu **Gmail'e e-posta göndermez**: hesap açınca doğrulama kodunu bu kutudan alıp uygulamaya girin.
 
-Gerçek hesaplar için [Firebase kurulum rehberini](docs/FIREBASE_SETUP.md), fiziksel cihaz için [iPhone rehberini](IPHONE_TEST.md) izleyin.
+İki tarayıcı profiliyle iki ayrı hesap oluşturup doğrulayın. İlk hesap davet oluştursun, diğeri katılsın. Yerel veriler Docker volume içinde kalır; `npm run backend:down` volume silmez.
 
-## Teknoloji ve proje yapısı
+Sadece arayüz için backend olmadan **Örnek dünyayı keşfet** seçeneği de kullanılabilir. Örnek kişiler ve konumlar canlı değildir.
 
-Expo SDK 58 · React 19.3 · React Native 0.88 · TypeScript 6 · Expo Router · Firebase JS SDK 12 · iOS MapKit / react-native-maps · web üzerinde Leaflet · SecureStore.
+## Özellikler
+
+| Alan | Mevcut davranış |
+|---|---|
+| Hesap | E-posta/şifre, tek kullanımlık altı haneli doğrulama kodu, şifre yenileme |
+| Eşleşme | 24 saat geçerli 12 karakterli kod; veritabanında en fazla iki üyelik |
+| Mesaj/görev | Ortak sohbet, görev tamamlama, görevi anıya bağlama |
+| Fotoğraf/anı | JPEG doğrulama ve yeniden kodlama, EXIF temizleme, not/tarih/yer |
+| Harita/albüm | Aynı anının iki görünümü; native harita ve web Leaflet |
+| Konum | Rıza, paylaşım sürümü, eski ölçüm uyarısı, paylaşımı durdurma |
+| Güvenlik | İçerik bildirme, partner engelleme, üretimde fotoğraf inceleme kuyruğu |
+| Silme | Eşleşmeyi bitirme ve şifre onaylı hesap silme; ilişkili verinin atomik kaldırılması |
+
+## Mimari
+
+Expo SDK 58 / React Native 0.88 / React 19.3 / TypeScript → Fastify 5 API → PostgreSQL 17.
 
 ```text
-src/
-  app/                 Expo Router rotaları
-  screens/             Karşılama, eşleşme, harita/sohbet/albüm ve ayarlar
-  components/          Ortak arayüz ve platforma özel harita
-  lib/                 Firebase, kimlik doğrulama, veri ve konum istemcileri
-  store.tsx            Oturum, önizleme ve ortak uygulama durumu
-  domain.ts            Saf iş kuralları
-firebase/
-  functions/src/       Sunucu doğrulaması ve callable işlemler
-  firestore.rules      Belge erişim kuralları
-  firestore.indexes.json
-  storage.rules        Fotoğraf erişim kuralları
-tests/                 İş kuralı ve Firebase emülatör testleri
-scripts/               Hazırlık ve bulut bağlantı yardımcıları
-docs/                  Kurulum ve mimari belgeleri
+src/app/               Expo Router rotaları
+src/screens/           Mobil ekranlar
+src/lib/backend.ts     HTTP, HttpOnly/SecureStore oturumu
+src/lib/api.ts         Ortak veri ve fotoğraf istemcisi
+src/lib/location.ts    İzinli GPS ve arka plan görevi
+server/src/            Hesaplar, yetkilendirme, işlemler, posta ve yönetim CLI
+server/migrations/     Veritabanı şeması
+server/tests/          Gerçek PostgreSQL entegrasyon ve güvenlik testleri
+server/compose.dev.yml Yerel API + PostgreSQL + Mailpit
+server/compose.prod.yml HTTPS reverse proxy ile üretim şablonu
 ```
 
-Veri yolları, fotoğraf erişimi ve sunucu işlemleri için [mimari rehberine](docs/ARCHITECTURE.md) bakın.
+Ortak veriler ön planda yaklaşık üç saniyede bir sorgulanır; bağlantı hatası son veriler olarak gösterilir. Mesaj ve anı listeleri en fazla 200 kayıt getirir; eski kayıtlar için sayfalama arayüzü yoktur. Her çift en fazla 500 fotoğraf tutabilir. Fotoğraflar özel PostgreSQL bytea alanında saklanır; bu tercih küçük MVP içindir. Büyük ölçek için ayrı nesne deposu/CDN ve yeni kabul testleri gerekir.
 
-## Geliştirme komutları
+## Üretim
 
-| Komut | Amaç |
+Yerel çalıştırma mağaza yayını değildir. Gerçek kullanıcılar için **sunucu, alan adı, HTTPS, SMTP sağlayıcısı, yedekleme ve insan moderasyonu** gerekir; bunların hosting maliyetleri vardır. Sunucu erişimi ve hesap bilgileri olmadan canlı dağıtım yapılmış sayılmaz.
+
+Üretimde fotoğraflar insan incelemesi bekler. [Moderasyon rehberi](docs/MODERATION.md) ve [yayın kontrol listesi](docs/RELEASE_CHECKLIST.md) tamamlanmalıdır. Güvenlik açığı bulunmadığı veya Apple kabulü garantisi verilmez. Mesajlar uçtan uca şifreli değildir. Gerçek iki iPhone testi ve imzalı native paket kontrolü gerekir.
+
+## Komutlar
+
+| Komut | İşlev |
 |---|---|
-| `npm run start` | Expo geliştirme sunucusu |
-| `npm run web` | Web önizlemesi |
-| `npm run ios` | Uygun macOS ortamında iOS başlatma |
-| `npm run android` | Android başlatma |
-| `npm run typecheck` | TypeScript denetimi |
-| `npm run lint` | ESLint denetimi |
-| `npm run ios:check` | Firebase / EAS / iOS hazırlık denetimi |
-| `npm run test:release` | Yayın yapılandırması ve içerik güvenliği testleri |
-| `npm run test:firebase` | Emülatör entegrasyonu |
-| `npm test` | Testler; Firebase entegrasyonu emülatör yoksa atlanır |
-| `npm run export:web` | Web paketi |
-| `npm run export:ios` | iOS JavaScript paketi; imzalı native derleme üretmez |
+| `npm run backend:up` | Yerel servisleri başlat |
+| `npm run backend:logs` | API loglarını göster |
+| `npm run backend:down` | Verileri koruyarak servisleri durdur |
+| `npm run web` | Web önizlemesini aç |
+| `npm run typecheck` / `npm run lint` | İstemci statik kontrolleri |
+| `npm test` / `npm run test:release` | İş kuralı ve yayın ayarı testleri |
+| `npm --prefix server ci` / `npm --prefix server run build` | Backend bağımlılıkları / derleme |
+| `npm run test:backend` | Ayrı test PostgreSQL veritabanında entegrasyon |
+| `npm run export:web` / `npm run export:ios` | JS/varlık paketleri; imzalı uygulama değildir |
+| `npm run ios:check` | API/EAS/iOS yapılandırma hazırlığı |
 
-Emülatör testlerinin tam komutu ve kabul ölçütleri [TESTING.md](TESTING.md) içindedir.
-
-## Gizlilik ve mevcut sınırlar
-
-- Ortak verilere erişim, doğrulanmış kullanıcı ve aktif çift üyeliğiyle sınırlandırılır. Paylaşılan veri değişiklikleri sunucu Functions üzerinden doğrulanır.
-- Konum paylaşımı başlangıçta kapalıdır. İzin ve paylaşım rızası gerekir; kapatma işlemi son koordinatı sunucuda sıfırlar. İki dakikayı aşan ölçüm eski gösterilir; bu kesin çevrimdışı tespiti değildir.
-- Canlı konumun yalnızca son kaydı tutulur. Anı koordinatları ortak içeriğin parçasıdır.
-- Fotoğraflar kimlik doğrulamalı Storage SDK istekleriyle alınır; istemci kalıcı indirme bağlantısı dağıtmaz. Daha önce indirilmiş kopyalar geri alınamaz.
-- Native oturum kalıcılığı SecureStore kullanır. `EXPO_PUBLIC_*` değerleri herkese açık istemci yapılandırmasıdır; Admin kimlik bilgileri uygulamaya konulmaz.
-- Mesajlar uçtan uca şifreli değildir. Push bildirimi, çevrimdışı gönderim kuyruğu ve eski kayıtlar için sayfalama mevcut değildir. Mesaj ve anı sorguları 200 kayıtla sınırlıdır.
-- Arka plan GPS sıklığı işletim sistemi, izinler, ağ ve pil koşullarına bağlıdır. Kesintisiz takip garantisi verilmez.
-- iOS önceliklidir. Android native haritası ek Google Maps yapılandırması ve cihaz testi gerektirir. Web, native konum kabul testinin yerine geçmez.
-
-## Katkı ve sorun bildirimi
-
-App Store metinleri, App Privacy, inceleme notları ve kalan adımlar [yayın hazırlığında](docs/RELEASE_CHECKLIST.md) listelenir. [Gizlilik politikası](docs/PRIVACY.md), [kullanım koşulları](docs/TERMS.md) ve [destek](docs/SUPPORT.md) herkese açıktır.
-
-Katkı akışı, doğrulama ve hata raporu bilgileri için [CONTRIBUTING.md](CONTRIBUTING.md) dosyasını inceleyin. Gerçek kişilere ait konum, mesaj, fotoğraf veya kimlik bilgilerini issue ve PR içeriklerine eklemeyin.
-
-## Lisans
-
-[MIT](LICENSE) lisansı kapsamında sunulur.
-
+[Gizlilik](docs/PRIVACY.md) · [Kullanım koşulları](docs/TERMS.md) · [Destek](docs/SUPPORT.md) · [Katkı](CONTRIBUTING.md) · [MIT lisansı](LICENSE)

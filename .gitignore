@@ -66,3 +66,5 @@ server/.env.local
 server/.env
 server/backups/
 *.dump
+
+!server/.env.production.example

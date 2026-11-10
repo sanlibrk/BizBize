@@ -4,8 +4,8 @@ Bu eşleştirme kaynak koduna göre hazırlanmıştır. Son yanıtları App Stor
 
 | Apple veri alanı | Uygulamadaki veri | Amaç | Hesapla ilişkili |
 |---|---|---|---|
-| Contact Info → Email Address | Firebase Auth e-postası | App Functionality | Evet |
-| Identifiers → User ID | Auth UID ve çift üyeliği | App Functionality | Evet |
+| Contact Info → Email Address | Hesap e-postası | App Functionality | Evet |
+| Identifiers → User ID | Kullanıcı UUID ve çift üyeliği | App Functionality | Evet |
 | Location → Precise Location | İzinli GPS ve anı koordinatları | App Functionality | Evet |
 | Location → Coarse Location | Yaklaşık konum izniyle alınan ölçümler varsa | App Functionality | Evet |
 | User Content → Photos or Videos | Yüklenen anı fotoğrafı; yalnızca fotoğraf desteklenir | App Functionality | Evet |
@@ -16,8 +16,8 @@ Bu eşleştirme kaynak koduna göre hazırlanmıştır. Son yanıtları App Stor
 ## Ek değerlendirmeler
 
 - Kaynakta Analytics, reklam SDK'sı veya reklam amaçlı takip entegrasyonu yok. “Tracking” kavramını partnerle izinli konum paylaşımıyla karıştırmayın; Apple'ın tanımını esas alın.
-- Firebase/Google hizmet günlükleri, IP/diagnostics saklama ve sağlayıcıların fiili kullanımlarını ayrıca inceleyin. Beyanı yalnızca bu tabloya bakarak kesinleştirmeyin.
-- Fotoğraflar Google Cloud Vision SafeSearch'e içerik denetimi için gönderilir; gizlilik metni bu kullanımı açıklar. Görsel analizinde ek veri işleme ve bölgesel ayarlar ayrıca doğrulanmalıdır.
+- API/hosting ve SMTP hizmet günlükleri, IP/diagnostics saklama ve sağlayıcıların fiili kullanımlarını ayrıca inceleyin. Beyanı yalnızca bu tabloya bakarak kesinleştirmeyin.
+- Fotoğraflar kendi API/veritabanımızda tutulur ve üretimde yetkili operatör incelemesi bekler. Harici görsel analiz servisi yoktur; seçilecek hosting/SMTP sağlayıcıları ve bölgeleri ayrıca doğrulanmalıdır.
 - Yerel önizleme verisi cihazda kalır; uzak örnek fotoğraf/harita istekleri ilgili sağlayıcılara bağlantı bilgisi iletir.
 - `app.json` UserDefaults için `CA92.1` gerekçesini ve takip yapılmadığını bildirir. Diğer SDK'ların required-reason API manifestleri nihai native paket üzerinde ayrıca kontrol edilmelidir; App Privacy formu manifestin yerine geçmez.
 - Apple'ın şifreleme anketi ile `ITSAppUsesNonExemptEncryption=false` değerinin nihai uygulamadaki standart TLS/şifreleme kullanımıyla uyumunu doğrulayın. Özel şifreleme eklenirse yeniden değerlendirin.

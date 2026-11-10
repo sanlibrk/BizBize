@@ -9,7 +9,7 @@ import { HttpError } from './security.js';
 import { authServices } from './auth.js';
 import { actionRoutes } from './actions.js';
 export async function createApp(pool:pg.Pool,cfg:Config){
- const app=Fastify({logger:false,bodyLimit:16384,requestTimeout:30000,trustProxy:cfg.trustProxy?1:false});
+ const app=Fastify({logger:false,bodyLimit:16384,requestTimeout:30000,trustProxy:cfg.trustProxy?(_address:string,hop:number)=>hop<1:false});
  await app.register(cookie);
  await app.register(cors,{origin:cfg.origins,credentials:true,allowedHeaders:['Content-Type','Authorization','X-BizBize-Client'],methods:['GET','POST','OPTIONS']});
  await app.register(helmet,{contentSecurityPolicy:{directives:{defaultSrc:["'none'"],frameAncestors:["'none'"]}}});

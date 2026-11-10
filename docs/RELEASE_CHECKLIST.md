@@ -1,59 +1,29 @@
-# TestFlight ve App Store yayın hazırlığı
+# Yayın hazırlığı · Kendi backend’imiz
 
-## Kaynakta tamamlananlar
+## Kaynakta hazırlananlar
 
-- [x] Firebase'e uygun, değerleri loglamayan iOS hazırlık kontrolü.
-- [x] TestFlight build profili ve production/testflight için eksik config engeli.
-- [x] Bundle identifier / EAS proje kimliği için ortam yapılandırması.
-- [x] Uygulama içi gizlilik, koşullar ve destek ekranları; herkese açık belge metinleri.
-- [x] İçerik bildirme, özel inceleme kuyruğu ve partner engelleme.
-- [x] Temel metin filtresi ve bulut fotoğraf güvenlik kontrolü.
-- [x] Hesap silme/erişim kapatma işlemlerinin yerel GPS hatasından bağımsızlaştırılması.
-- [x] UserDefaults privacy manifest gerekçesi.
-- [x] Mağaza açıklaması, App Privacy eşleştirmesi, inceleme notları ve ekran görüntüsü planı.
-- [x] Statik kontrol, export ve Firebase entegrasyonu için GitHub Actions yapılandırması.
+- [x] Firebase'siz hesap, eşleşme, mesaj, görev, anı ve konum API'si.
+- [x] PostgreSQL şeması, parametreli SQL, transaction ve üyelik kısıtları.
+- [x] Güvenli parola/oturum saklama, süreli kodlar, şifreli posta kuyruğu ve hız sınırları.
+- [x] Özel fotoğraf erişimi, decoder/metadata temizliği, üretimde manuel onay.
+- [x] Bildirim, engelleme, mevcut şifreyle hesap silme.
+- [x] Yerel Docker + Mailpit kurulumu ve üretim HTTPS şablonu.
+- [x] Gizlilik/koşullar/destek, mağaza metni ve inceleme notları.
+- [x] CI'da gerçek PostgreSQL ve istemci doğrulamaları.
 
-## Hesap/dağıtım/cihaz erişimi bekleyenler
+## Canlı yayın öncesi tamamlanacaklar
 
-- [ ] Firebase bulut projesi ve beş genel istemci değeri sağlandı.
-- [ ] Cloud Functions, Firestore kuralları/indeksleri ve Storage kuralları dağıtıldı.
-- [ ] Cloud Vision API, çalışma kimliği ve faturalandırma doğrulandı; fotoğraf kabul/hata testi geçti.
-- [ ] `reports.expires_at` TTL etkin; bildirim kuyruğu ve destek e-postası için sorumlu belirlendi.
-- [ ] Apple Developer üyeliği mevcut (kullanıcı bildirdi); oturum, takım ve imzalama erişimi doğrulandı.
-- [ ] Kullanıcıya ait bundle identifier ve EAS proje UUID'si bağlandı.
-- [ ] İki fiziksel iPhone'da test kaydı dolduruldu; ön plan/arka plan GPS doğrulandı.
-- [ ] Gerçek hesap silme, engelleme ve üçüncü hesap erişim reddi bulutta doğrulandı.
-- [ ] İmzalı native paketin privacy manifest ve SDK raporu incelendi.
-- [ ] App Store Connect kaydı, yaş anketi, App Privacy ve export compliance tamamlandı.
-- [ ] Gerçek iPhone ekran görüntüleri ve görsel hakları doğrulandı.
-- [ ] İnceleme hesapları ve özel iletişim alanları App Store Connect'e girildi.
-- [ ] TestFlight kabulü tamamlandı ve App Review gönderimi yapıldı.
+- [ ] Kullanıcıya ait sunucu ve alan adı sağlandı; API/DB/HTTPS dağıtıldı.
+- [ ] SMTP göndericisi, SPF/DKIM/DMARC, teslim ve kuyruk hata testleri tamamlandı.
+- [ ] Üretim fotoğraf inceleme kuyruğu ve destek e-postası için sorumlu belirlendi.
+- [ ] Yedekleme, geri yükleme, saklama politikası ve sır rotasyonu doğrulandı.
+- [ ] Host erişimleri, API/DB portları, alarm/izleme ve bağımsız güvenlik incelemesi tamamlandı.
+- [ ] EAS gerçek API adresi, bundle identifier ve proje kimliği bağlandı.
+- [ ] İki fiziksel iPhone’da ön plan/arka plan konum ve diğer kabul testleri geçti.
+- [ ] İmzalı native pakette privacy manifest ve SDK raporu incelendi.
+- [ ] App Store Connect gizlilik, yaş derecelendirmesi ve şifreleme yanıtları doğrulandı.
+- [ ] Gerçek iPhone ekran görüntüleri ve içerik hakları hazırlandı.
+- [ ] İnceleme hesapları ve özel iletişim bilgileri App Store Connect'e girildi.
+- [ ] TestFlight ve App Review tamamlandı.
 
-## Komut sırası
-
-```bash
-npm ci
-npm --prefix firebase/functions ci
-npm run typecheck
-npm run lint
-npm run test:release
-npm test
-npm run functions:build
-npm run test:firebase
-npm run export:web
-npm run export:ios
-npm run ios:check
-```
-
-`ios:check` eksik yapılandırmada başarısız olmalıdır; bu beklenen korumadır. Gerçek proje alanlarını `.env` veya EAS production ortamına girin. `BIZBIZE_IOS_BUNDLE_IDENTIFIER` sizin Apple hesabınızda kayıtlı değer, `EAS_PROJECT_ID` gerçek Expo proje UUID'si olmalıdır; örnek değerlerle devam etmeyin.
-
-```bash
-npx eas-cli@latest login
-npx eas-cli@latest init
-npx eas-cli@latest build --platform ios --profile development
-# İki cihaz kabulünden sonra:
-npx eas-cli@latest build --platform ios --profile testflight
-npx eas-cli@latest submit --platform ios --profile production
-```
-
-Submit paketi App Store Connect'e iletir; mağazada yayınlama kararı ve App Review akışı ayrıca tamamlanır. Bu depodaki işaretlenmemiş maddeler yapılmış sayılmamalıdır.
+Bu liste kaynak hazırlığını canlı hizmetten ayırır; güvenlik açığı bulunmadığı veya Apple kabulü garanti edilmez. Önceki Firebase hesapları otomatik taşınmaz. [Kurulum](BACKEND_SETUP.md) · [Güvenlik](SECURITY.md) · [Moderasyon](MODERATION.md)
