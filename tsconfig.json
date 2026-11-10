@@ -9,7 +9,16 @@
   },
   "exclude": [
     "server",
-    "firebase",
-    "node_modules"
+    "node_modules",
+    "dist",
+    "web-test",
+    "browser-results"
+  ],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tests/**/*.ts",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
   ]
 }

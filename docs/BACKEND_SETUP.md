@@ -57,7 +57,7 @@ SMTP için doğrulanmış gönderici, TLS, SPF/DKIM/DMARC ve sağlayıcı limitl
 
 ## Yönetim ve moderasyon
 
-Üretimde fotoğraflar `pending` kalır ve partner dahil hiç kimseye gösterilmez. [İnceleme akışı](MODERATION.md) için operatör gerekir. Yerel geliştirme `development` modu gerçek insan incelemesini atlar; üretimde bu modla başlatma reddedilir.
+Üretimde fotoğraflar `pending` kalır ve yükleyen kullanıcı dışında kimseye gösterilmez. [İnceleme akışı](MODERATION.md) için operatör gerekir. Yerel geliştirme `development` modu gerçek insan incelemesini atlar; üretimde bu modla başlatma reddedilir.
 
 ## Önceki Firebase verileri
 

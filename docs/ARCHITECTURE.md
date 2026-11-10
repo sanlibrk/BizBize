@@ -27,7 +27,7 @@ Altı haneli e-posta kodları kullanıcı ve amaca bağlı HMAC özetiyle saklan
 
 ## Fotoğraflar
 
-İstemci en fazla 5 MB JPEG gönderir. Sunucu gerçek decoder ile görüntüyü açar; 20 MP sınırından sonra reddeder, EXIF dahil metadata'yı çıkartarak en fazla 1600×1600 JPEG'e yeniden kodlar. Özel PostgreSQL bytea alanında tutulur. Okuma endpoint'i her istekte aktif çift üyeliğini denetler; herkese açık dosya yolu veya kalıcı URL yoktur. Üretimde insan onayından önce fotoğraf ve bağlı anı gösterilmez.
+İstemci en fazla 5 MB JPEG gönderir. Sunucu gerçek decoder ile görüntüyü açar; 20 MP sınırından sonra reddeder, EXIF dahil metadata'yı çıkartarak en fazla 1600×1600 JPEG'e yeniden kodlar. Özel PostgreSQL bytea alanında tutulur. Okuma endpoint'i her istekte aktif çift üyeliğini denetler; herkese açık dosya yolu veya kalıcı URL yoktur. Üretimde insan onayından önce fotoğraf ve bağlı anıyı yalnızca sahibi inceleme etiketiyle görebilir.
 
 ## Eşitleme ve konum
 

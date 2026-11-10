@@ -27,13 +27,13 @@ export function actionRoutes(app:FastifyInstance,pool:pg.Pool,cfg:Config,auth:Au
  app.get('/v1/shared',async req=>{const u=await auth.user(req);return tx(async db=>{
   if(!(await db.query('SELECT 1 FROM members WHERE user_id=$1',[u.id])).rowCount)return {members:[],messages:[],memories:[],locations:[]};
   const p=await pair(db,u.id,false);
-  const memories=(await db.query("SELECT m.id,m.couple_id,m.author_id,m.note,m.place,to_char(m.happened_on,'YYYY-MM-DD') AS happened_on,m.latitude,m.longitude,m.id::text AS photo_path,m.created_at FROM memories m JOIN photos p ON p.id=m.id WHERE m.couple_id=$1 AND p.status='approved' ORDER BY m.happened_on DESC,m.created_at DESC LIMIT 200",[p.cid])).rows;
+  const memories=(await db.query("SELECT m.id,m.couple_id,m.author_id,m.note,m.place,to_char(m.happened_on,'YYYY-MM-DD') AS happened_on,m.latitude,m.longitude,m.id::text AS photo_path,p.status AS moderation_status,m.created_at FROM memories m JOIN photos p ON p.id=m.id WHERE m.couple_id=$1 AND (p.status='approved' OR m.author_id=$2) ORDER BY m.happened_on DESC,m.created_at DESC LIMIT 200",[p.cid,u.id])).rows;
   const messages=(await db.query('SELECT * FROM messages WHERE couple_id=$1 ORDER BY created_at DESC,id DESC LIMIT 200',[p.cid])).rows.reverse();
   const locations=(await db.query('SELECT * FROM locations WHERE couple_id=$1 AND sharing',[p.cid])).rows;
   return {members:p.members,memories,messages,locations};
  });});
  app.get('/v1/photos/:id',async req=>{const u=await auth.user(req),photo=id.parse((req.params as {id:string}).id);
-  const r=await pool.query("SELECT p.bytes FROM photos p JOIN members m ON m.couple_id=p.couple_id WHERE p.id=$1 AND m.user_id=$2 AND p.status='approved'",[photo,u.id]);if(!r.rowCount)fail(404,'Fotoğraf bulunamadı.');return {base64:(r.rows[0].bytes as Buffer).toString('base64')};
+  const r=await pool.query("SELECT p.bytes FROM photos p JOIN members m ON m.couple_id=p.couple_id WHERE p.id=$1 AND m.user_id=$2 AND (p.status='approved' OR (p.status='pending' AND p.owner_id=$2))",[photo,u.id]);if(!r.rowCount)fail(404,'Fotoğraf bulunamadı.');return {base64:(r.rows[0].bytes as Buffer).toString('base64')};
  });
  app.post('/v1/actions/:action',{bodyLimit:8*1024*1024},async(req,reply)=>{
   const name=(req.params as {action:string}).action,u=await auth.user(req,false),input=(req.body??{}) as Record<string,unknown>;

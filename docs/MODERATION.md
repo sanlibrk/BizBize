@@ -1,6 +1,6 @@
 # İçerik güvenliği ve operatör akışı
 
-Üretimde yeni fotoğraflar **pending** durumunda kalır. Sunucu bu fotoğrafları ve bağlı anıları ortak albüme veya fotoğraf endpoint'ine açmaz. Yetkili operatör inceleyip onaylar veya reddeder. Otomatik bir harici görsel analiz hizmetine bağımlılık yoktur.
+Üretimde yeni fotoğraflar **pending** durumunda kalır. Sunucu bu fotoğrafları ve bağlı anıları partnere açmaz; sahibi inceleme etiketini görür ve kendi anısını silebilir. Yetkili operatör inceleyip onaylar veya reddeder. Otomatik bir harici görsel analiz hizmetine bağımlılık yoktur.
 
 Metinlerde sunucuda temel açık tehdit/yasa dışı içerik örüntü filtresi vardır; bağlamı ve bütün kaçınma yöntemlerini yakalayan bir moderasyon modeli değildir. Kullanıcılar partner, mesaj ve anı bildirebilir; bildirimler kamuya kapalıdır. Engelleme ortak alanı sonlandırır ve iki yönlü yeniden eşleşmeyi engeller.
 
@@ -31,3 +31,14 @@ Bildirim detaylarını yalnızca sınırlandırılmış DB erişimiyle inceleyin
 Geliştirme ortamı `PHOTO_MODERATION=development` ile hızlı yerel test yapar. Üretimde bu bypass ile başlatma reddedilir.
 
 [Apple kullanıcı içeriği kuralları](https://developer.apple.com/app-store/review/guidelines/#user-generated-content)
+
+## Docker üretim kurulumunda
+
+Kaynak/tsx kurmadan derlenmiş CLI kullanılabilir:
+
+```bash
+docker compose --env-file server/.env.production -f server/compose.prod.yml exec api node dist/admin.js list
+docker compose --env-file server/.env.production -f server/compose.prod.yml exec api node dist/admin.js approve-photo FOTO_UUID
+```
+
+Özel fotoğrafı incelemek için `export-photo` çıktısını yalnızca güvenli operatör dosyasına alın; geçici kopyaları işlemden sonra kaldırın.

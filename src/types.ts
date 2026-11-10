@@ -1,7 +1,7 @@
 export type Coordinate = { latitude: number; longitude: number };
 export type Memory = Coordinate & {
   id: string; couple_id: string; author_id: string; note: string; place: string;
-  happened_on: string; photo_path: string; photo_url?: string; created_at: string;
+  happened_on: string; moderation_status?: 'pending' | 'approved'; photo_path: string; photo_url?: string; created_at: string;
 };
 export type Message = {
   id: string; couple_id: string; author_id: string; kind: 'text' | 'task';
@@ -17,3 +17,4 @@ export type MemoryDraft = Coordinate & {
   note: string; place: string; happened_on: string; uri: string; base64?: string; mimeType?: string;
 };
 export const EMPTY_DATA: SharedData = { members: [], memories: [], messages: [], locations: [] };
+

@@ -80,7 +80,7 @@ test('Custom API: real PostgreSQL isolation, authentication and privacy',async t
   try{
    const r=await manual.inject({method:'POST',url:'/v1/actions/uploadMemoryPhoto',headers:{'x-bizbize-client':'native',authorization:`Bearer ${a.token}`},payload:{id:pending,photo_base64:jpeg.toString('base64')}});assert.equal(r.statusCode,200);assert.equal(r.json().status,'pending');
    const draft={id:pending,note:'İnceleme',place:'Kafe',happened_on:'2026-11-10',latitude:41,longitude:29,task_id:null};assert.equal((await act('addMemory',draft,a.token)).data.pending,true);
-   assert.equal((await request('/v1/photos/'+pending,undefined,b.token)).status,404);assert.ok(!(await request('/v1/shared',undefined,b.token)).data.memories.some((m:{id:string})=>m.id===pending));
+   assert.equal((await request('/v1/photos/'+pending,undefined,b.token)).status,404);assert.equal((await request('/v1/photos/'+pending,undefined,a.token)).status,200);assert.ok(!(await request('/v1/shared',undefined,b.token)).data.memories.some((m:{id:string})=>m.id===pending));
    await pool.query("UPDATE photos SET status='approved' WHERE id=$1",[pending]);assert.equal((await request('/v1/photos/'+pending,undefined,b.token)).status,200);
   }finally{await manual.close();}
  });
