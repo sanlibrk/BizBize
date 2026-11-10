@@ -47,7 +47,7 @@ const base = process.env.AUTH_TEST_URL || 'http://127.0.0.1:4173';
       assert.equal(await page.getByLabel('E-posta', { exact: true }).inputValue(), 'navigation@example.test');
       await page.getByRole('button', { name: 'Hesabın var mı? Giriş yap', exact: true }).click();
       await page.getByRole('button', { name: 'Şifremi unuttum', exact: true }).click();
-      assert.equal(await page.getByLabel('Şifre', { exact: true }).count(), 0);
+      await page.getByLabel('Şifre', { exact: true }).waitFor({ state: 'detached' });
       await page.getByRole('button', { name: 'Yenileme bağlantısı gönder', exact: true }).waitFor();
       await page.getByRole('button', { name: 'Geri', exact: true }).click();
       await page.getByRole('button', { name: 'Birlikte başlayalım', exact: true }).click();
