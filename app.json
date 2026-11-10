@@ -2,7 +2,7 @@
   "expo": {
     "name": "Biz Bize",
     "slug": "biz-bize",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "scheme": "bizbize",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,6 +12,18 @@
       "bundleIdentifier": "com.sanlibrk.bizbize",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyTracking": false,
+        "NSPrivacyTrackingDomains": [],
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
+          }
+        ]
       }
     },
     "android": {

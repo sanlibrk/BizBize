@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: bizbize
+      POSTGRES_USER: postgres
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Set an independent application database password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run npm run backend:up first}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/01-app.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d bizbize']
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+  mail:
+    image: axllent/mailpit:v1.27
+    ports: ['127.0.0.1:8025:8025']
+    restart: unless-stopped
+  api:
+    build: .
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://bizbize:${APP_DB_PASSWORD}@db:5432/bizbize
+      APP_SECRET: ${APP_SECRET}
+      PUBLIC_URL: http://localhost:3001
+      WEB_ORIGINS: http://localhost:8081,http://127.0.0.1:8081
+      SMTP_HOST: mail
+      SMTP_PORT: '1025'
+      MAIL_FROM: 'Biz Bize <hello@bizbize.local>'
+      PHOTO_MODERATION: development
+    ports: ['127.0.0.1:3001:3001']
+    depends_on:
+      db:
+        condition: service_healthy
+      mail:
+        condition: service_started
+    restart: unless-stopped
+volumes:
+  db_data:
