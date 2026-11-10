@@ -26,3 +26,7 @@ API yalnızca güvenilir reverse proxy arkasında bir hop'a güvenecek şekilde 
 Entegrasyon testleri kimliksiz/üçüncü hesap erişimini, veri izolasyonunu, yarış halinde eşleşmeyi, kod deneme sınırlarını, fotoğraf erişimini, moderasyonu, konum rızasını, engellemeyi ve silmeyi sınar. Testlerin geçmesi sıfır güvenlik açığı kanıtı değildir. Apple incelemesi, yasal veri yükümlülükleri ve gerçek cihaz davranışı ayrı doğrulanır.
 
 Güvenlik sorunu bildirmek için [destek adresini](SUPPORT.md) kullanın; herkese açık issue'ya token, özel fotoğraf veya koordinat koymayın.
+
+## Bilinen bağımlılık bulguları
+
+Backend üretim taraması sıfır bildirimle sonuçlandı. Expo geliştirme/paketleme zincirindeki beş orta önem dereceli bildirim, uyumlu upstream düzeltme bekleyen artık risktir. Ayrıntı ve uygulanan sürüm düzeltmeleri [bağımlılık taraması kaydında](DEPENDENCY_AUDIT.md). Bu bulgular saklanmaz ve sıfır açık iddiasında bulunulmaz.

@@ -3,12 +3,13 @@ import nodemailer from 'nodemailer';
 import type pg from 'pg';
 import type { Config } from './config.js';
 import type { DB } from './db.js';
-import { transaction } from './db.js';
+import { transaction,serialize } from './db.js';
 import { codeHash } from './security.js';
 const key=(secret:string)=>createHash('sha256').update(secret).digest();
 export function seal(secret:string,value:unknown){const iv=randomBytes(12),c=createCipheriv('aes-256-gcm',key(secret),iv);const bytes=Buffer.concat([c.update(JSON.stringify(value)),c.final()]);return Buffer.concat([iv,c.getAuthTag(),bytes]).toString('base64');}
 export function unseal(secret:string,envelope:string){const b=Buffer.from(envelope,'base64'),d=createDecipheriv('aes-256-gcm',key(secret),b.subarray(0,12));d.setAuthTag(b.subarray(12,28));return JSON.parse(Buffer.concat([d.update(b.subarray(28)),d.final()]).toString()) as {to:string;subject:string;text:string};}
 export async function queueCode(db:DB,cfg:Config,user:{id:string;email:string},purpose:'verify'|'reset'){
+ await serialize(db);
  const code=String(randomInt(100000,1000000));
  await db.query("INSERT INTO email_codes(user_id,purpose,code_hash,expires_at) VALUES($1,$2,$3,now()+interval '15 minutes') ON CONFLICT(user_id,purpose) DO UPDATE SET code_hash=excluded.code_hash,expires_at=excluded.expires_at,attempts=0",[user.id,purpose,codeHash(cfg.secret,user.id,purpose,code)]);
  await db.query('DELETE FROM mail_outbox WHERE user_id=$1 AND purpose=$2 AND sent_at IS NULL',[user.id,purpose]);

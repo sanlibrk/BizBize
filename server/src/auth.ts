@@ -17,10 +17,10 @@ export function authServices(pool:pg.Pool,cfg:Config){
   const result=await pool.query('INSERT INTO rate_limits(key,count,expires_at) VALUES($1,1,now()+make_interval(secs=>$2)) ON CONFLICT(key) DO UPDATE SET count=CASE WHEN rate_limits.expires_at<=now() THEN 1 ELSE rate_limits.count+1 END,expires_at=CASE WHEN rate_limits.expires_at<=now() THEN excluded.expires_at ELSE rate_limits.expires_at END RETURNING count',[hash(key),seconds]);
   if(result.rows[0].count>max)fail(429,'Çok fazla deneme. Bir süre sonra tekrar dene.');
  }
- async function user(req:FastifyRequest,verified=true){
+ async function user(req:FastifyRequest,verified=true,executor:pg.Pool|pg.PoolClient=pool){
   const bearer=req.headers.authorization?.match(/^Bearer ([A-Za-z0-9_-]{43})$/)?.[1];
   const value=bearer||req.cookies[cookie];if(!value)fail(401,'Önce giriş yap.');
-  const r=await pool.query('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>now() AND NOT u.disabled',[hash(value)]);
+  const r=await executor.query('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>now() AND NOT u.disabled',[hash(value)]);
   const u=r.rows[0] as User|undefined;if(!u)fail(401,'Oturum sona erdi. Yeniden giriş yap.');
   if(verified&&!u.email_verified)fail(403,'Önce e-posta adresini doğrula.');return u;
  }
@@ -32,6 +32,7 @@ export function authServices(pool:pg.Pool,cfg:Config){
  }
  async function consume(email:string,purpose:'verify'|'reset',code:string,newPassword?:string){
   const result=await transaction(pool,async db=>{
+   await serialize(db);
    const r=await db.query('SELECT u.*,c.code_hash,c.expires_at,c.attempts FROM users u JOIN email_codes c ON c.user_id=u.id AND c.purpose=$2 WHERE u.email=$1 AND NOT u.disabled FOR UPDATE OF c,u',[email,purpose]);const row=r.rows[0];
    if(!row||row.attempts>=5||new Date(row.expires_at)<=new Date())return false;
    await db.query('UPDATE email_codes SET attempts=attempts+1 WHERE user_id=$1 AND purpose=$2',[row.id,purpose]);
@@ -68,6 +69,13 @@ export function authServices(pool:pg.Pool,cfg:Config){
    await transaction(pool,async db=>{await serialize(db);await db.query('UPDATE users SET sharing=false,sharing_version=$2 WHERE id=$1',[u.id,randomUUID()]);await db.query('DELETE FROM locations WHERE user_id=$1',[u.id]);await db.query('DELETE FROM sessions WHERE token_hash=$1',[hash(req.headers.authorization?.replace(/^Bearer /,'')||req.cookies[cookie]||'')]);});
    reply.clearCookie(cookie,{path:'/',secure:cfg.production,sameSite:'lax'});return {loggedOut:true};
   });
+  app.get('/v1/auth/verification-status',async req=>{
+   const u=await user(req,false);if(u.email_verified)return {delivery:'verified'};
+   const code=(await pool.query("SELECT expires_at FROM email_codes WHERE user_id=$1 AND purpose='verify'",[u.id])).rows[0];
+   if(!code||new Date(code.expires_at)<=new Date())return {delivery:'expired'};
+   const pending=(await pool.query("SELECT attempts FROM mail_outbox WHERE user_id=$1 AND purpose='verify' AND sent_at IS NULL",[u.id])).rows[0];
+   return {delivery:pending?(pending.attempts>0?'retrying':'queued'):'accepted'};
+  });
   app.post('/v1/auth/resend',async req=>{const u=await user(req,false);await rate('verify-send:'+u.id,3,600);if(!u.email_verified)await transaction(pool,db=>queueCode(db,cfg,u,'verify'));return {queued:true};});
   app.post('/v1/auth/verify',async req=>{const u=await user(req,false);const {code}=z.object({code:z.string().regex(/^\d{6}$/)}).strict().parse(req.body);await rate('verify-attempt:'+u.id,10,900);await consume(u.email,'verify',code);return {verified:true};});
   app.post('/v1/auth/forgot',async req=>{
@@ -80,7 +88,7 @@ export function authServices(pool:pg.Pool,cfg:Config){
   app.post('/v1/auth/password',async req=>{
    const u=await user(req,false),b=z.object({current_password:z.string().min(1).max(128),password:passwordSchema}).strict().parse(req.body);await rate('change-password:'+u.id,5,900);
    if(!await passwordMatches(b.current_password,u.password_hash))fail(403,'Mevcut şifre hatalı.');const pw=await passwordHash(b.password);
-   await transaction(pool,async db=>{await db.query('UPDATE users SET password_hash=$2,sharing=false,sharing_version=gen_random_uuid() WHERE id=$1',[u.id,pw]);await db.query('DELETE FROM locations WHERE user_id=$1',[u.id]);await db.query('DELETE FROM sessions WHERE user_id=$1',[u.id]);});return {reset:true};
+   await transaction(pool,async db=>{await serialize(db);await db.query('UPDATE users SET password_hash=$2,sharing=false,sharing_version=gen_random_uuid() WHERE id=$1',[u.id,pw]);await db.query('DELETE FROM locations WHERE user_id=$1',[u.id]);await db.query('DELETE FROM sessions WHERE user_id=$1',[u.id]);});return {reset:true};
   });
  }
  return {user,rate,routes,cookie};

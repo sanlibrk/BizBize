@@ -1,7 +1,7 @@
 name: Validate application and own backend
 on:
   push:
-    branches: [main, 'backend/**']
+    branches: [main]
   pull_request:
 permissions:
   contents: read
@@ -50,6 +50,7 @@ jobs:
           cache-dependency-path: server/package-lock.json
       - run: npm --prefix server ci
       - run: npm --prefix server run build
+      - run: npm --prefix server audit --omit=dev --audit-level=moderate
       - run: npm --prefix server test
       - run: npm ci
       - name: Export client against local API

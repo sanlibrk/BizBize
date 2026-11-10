@@ -43,9 +43,9 @@ test('Custom API: real PostgreSQL isolation, authentication and privacy',async t
   assert.equal((await request('/v1/auth/verify',{code:next},p.token)).status,400);
  });
  await t.test('SMTP queue retries failures without exposing plaintext codes',async()=>{
-  const p=await account(false),row=(await pool.query('SELECT envelope FROM mail_outbox WHERE user_id=$1',[p.uid])).rows[0];assert.ok(!row.envelope.includes(p.email));
+  const p=await account(false),row=(await pool.query('SELECT envelope FROM mail_outbox WHERE user_id=$1',[p.uid])).rows[0];assert.equal((await request('/v1/auth/verification-status',undefined,p.token)).data.delivery,'queued');assert.ok(!row.envelope.includes(p.email));
   // Process all outstanding messages using an injected test mail transport, never a public debug endpoint.
-  let sent=0;while(await flushMail(pool,cfg,async()=>{sent++;})){if(sent>30)throw new Error('Unexpected queue loop');}assert.ok(sent>0);
+  let sent=0;while(await flushMail(pool,cfg,async()=>{sent++;})){if(sent>30)throw new Error('Unexpected queue loop');}assert.ok(sent>0);assert.equal((await request('/v1/auth/verification-status',undefined,p.token)).data.delivery,'accepted');
   await request('/v1/auth/resend',{},p.token);
   await flushMail(pool,cfg,async()=>{throw new Error('Temporary SMTP failure');});
   assert.equal((await pool.query('SELECT attempts FROM mail_outbox WHERE user_id=$1',[p.uid])).rows[0].attempts,1);
@@ -105,8 +105,8 @@ test('Custom API: real PostgreSQL isolation, authentication and privacy',async t
   await act('disconnectPair',{},a.token);const reverse=await act('createInvite',{},b.token);assert.equal((await act('joinPair',{code:reverse.data.code},a.token)).status,403);
  });
  await t.test('password reset is single-use and revokes previous sessions',async()=>{
-  const p=await account();assert.equal((await request('/v1/auth/forgot',{email:p.email})).status,200);const reset=await code(p.uid,'reset'),password='A-new-long-password-2026!';
-  assert.equal((await request('/v1/auth/reset',{email:p.email,code:reset,password})).status,200);
+  const p=await account(),partner=await account();const invite=await act('createInvite',{},p.token);await act('joinPair',{code:invite.data.code},partner.token);const shared=await request('/v1/shared',undefined,p.token),consent=await act('setLocationSharing',{enabled:true},p.token);const fix={couple_id:shared.data.members[0].couple_id,version:consent.data.version,latitude:41,longitude:29,accuracy:10,captured_at:new Date().toISOString()};await act('publishLocation',fix,p.token);assert.equal((await request('/v1/auth/forgot',{email:p.email})).status,200);const reset=await code(p.uid,'reset'),password='A-new-long-password-2026!';
+  const race=await Promise.all([request('/v1/auth/reset',{email:p.email,code:reset,password}),...Array.from({length:5},()=>act('publishLocation',fix,p.token))]);assert.equal(race[0].status,200);assert.equal((await request('/v1/shared',undefined,partner.token)).data.locations.length,0);
   assert.equal((await request('/v1/auth/me',undefined,p.token)).status,401);assert.equal((await request('/v1/auth/reset',{email:p.email,code:reset,password})).status,400);
   assert.equal((await request('/v1/auth/login',{email:p.email,password:p.password})).status,401);assert.equal((await request('/v1/auth/login',{email:p.email,password})).status,200);
  });

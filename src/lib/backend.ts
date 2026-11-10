@@ -21,12 +21,12 @@ export async function request<T>(path:string,body?:Record<string,unknown>,option
  const headers:Record<string,string>={'Content-Type':'application/json','X-BizBize-Client':Platform.OS==='web'?'web':'native'};
  if(Platform.OS!=='web'&&!options.anonymous){const token=await SecureStore.getItemAsync(KEY);if(token)headers.Authorization=`Bearer ${token}`;}
  let response:Response;
+ let result:{error?:{message?:string}}|null;
  const timeout=new AbortController(),timer=setTimeout(()=>timeout.abort(),20000);
  const aborted=()=>timeout.abort();options.signal?.addEventListener('abort',aborted,{once:true});
- try{response=await fetch(base+path,{method:body===undefined?'GET':'POST',credentials:'include',headers,body:body===undefined?undefined:JSON.stringify(body),signal:timeout.signal});}
+ try{response=await fetch(base+path,{method:body===undefined?'GET':'POST',credentials:'include',headers,body:body===undefined?undefined:JSON.stringify(body),signal:timeout.signal});result=await response.json();}
  catch{throw new Error('Sunucuya ulaşılamadı. İnternetini ve sunucu bağlantısını kontrol et.');}
  finally{clearTimeout(timer);options.signal?.removeEventListener('abort',aborted);}
- const result=await response.json().catch(()=>null);
  if(!response.ok){if(response.status===401&&!options.anonymous)await forgetSession();throw new Error(result?.error?.message||'Sunucu işlemi tamamlanamadı.');}
  return result as T;
 }

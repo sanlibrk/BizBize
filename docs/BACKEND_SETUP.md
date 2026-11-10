@@ -72,3 +72,7 @@ docker compose --env-file server/.env.production -f server/compose.prod.yml exec
 ```
 
 Yedeklerin saklama/silme süresini belirleyip gizlilik metniyle eşleştirin; silinen hesap verilerinin yedek ömrünü kullanıcıya açıklayın. Dosyaları depoya yüklemeyin. `pg_restore` işlemini canlı veritabanına deneme amacıyla uygulamayın.
+
+## E-posta gelmiyorsa
+
+Uygulama doğrulama ekranı `queued`, `retrying`, `accepted` durumlarını kullanıcıya açıklayarak gösterir. `accepted`, SMTP sağlayıcısının mesajı kabul ettiğini ifade eder; gelen kutusuna teslim garantisi değildir. Yerel geliştirmede Mailpit'i açın. Üretimde yetkili operatör `admin -- status` ile bekleyen/yeniden denenen posta ve moderasyon sayısını görebilir; komut e-posta kodlarını veya kişisel mesajları yazdırmaz.
