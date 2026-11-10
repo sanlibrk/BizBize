@@ -71,6 +71,7 @@ jobs:
           python3 -m http.server 4173 --directory web-test >/tmp/bizbize-web.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:3001/healthz && break; sleep 1; done
           node scripts/backend-browser-test.cjs
+          node scripts/auth-browser-test.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
