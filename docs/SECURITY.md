@@ -3,6 +3,7 @@
 ## Uygulanan korumalar
 
 - Sunucuda doğrulanan kimlik, doğrulanmış e-posta ve aktif çift üyeliği.
+- Üretimde superuser olmayan ayrı uygulama DB rolü; ilgisiz mevcut tablolara kurulumun reddi.
 - Parametreli SQL ve Zod girdi doğrulaması; istemci doğrudan veritabanına bağlanmaz.
 - Salt'lı scrypt parola hash'i; rastgele opak oturumlar ve yalnızca özetlerinin DB'de tutulması.
 - HttpOnly/Secure/SameSite web çerezi, native SecureStore; web localStorage'da token yok.

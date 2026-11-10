@@ -3,12 +3,14 @@ services:
     image: postgres:17-bookworm
     environment:
       POSTGRES_DB: bizbize
-      POSTGRES_USER: bizbize
+      POSTGRES_USER: postgres
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Set an independent application database password}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run npm run backend:up first}
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/01-app.sh:ro
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U bizbize -d bizbize']
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d bizbize']
       interval: 3s
       timeout: 3s
       retries: 30
@@ -21,7 +23,7 @@ services:
     build: .
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgresql://bizbize:${POSTGRES_PASSWORD}@db:5432/bizbize
+      DATABASE_URL: postgresql://bizbize:${APP_DB_PASSWORD}@db:5432/bizbize
       APP_SECRET: ${APP_SECRET}
       PUBLIC_URL: http://localhost:3001
       WEB_ORIGINS: http://localhost:8081,http://127.0.0.1:8081
