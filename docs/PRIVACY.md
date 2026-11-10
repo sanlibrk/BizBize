@@ -1,6 +1,6 @@
 # Biz Bize · Gizlilik politikası
 
-Son güncelleme: 2026-11-06
+Son güncelleme: 2026-11-10
 
 ## Hizmet ve iletişim
 
@@ -12,7 +12,7 @@ E-posta adresi ve hesap kimliği; eşleşme üyeliği; gönderdiğin mesaj ve g�
 
 ## Amaç ve hizmet sağlayıcılar
 
-Veriler hesap açma, eşleştirme, iletişim, anı saklama ve izin verdiğin konum paylaşımı için kullanılır. Firebase/Google hizmetleri kimlik doğrulama, veri ve fotoğraf saklama ile sunucu işlemlerini yürütür. Buluta yüklenen fotoğraflar uygunsuz içerik kontrolü için Google Cloud Vision SafeSearch hizmetine de iletilir. İnternet üzerinden yapılan isteklerde IP adresi ve teknik bağlantı verileri ilgili sağlayıcılara ulaşabilir. Harita sağlayıcıları ve örnek fotoğraf servisi de bağlantı bilgilerini alabilir.
+Veriler hesap açma, eşleştirme, iletişim, anı saklama ve izin verdiğin konum paylaşımı için kullanılır. Hesaplar, ortak içerik ve fotoğraflar Biz Bize API sunucusu ve PostgreSQL veritabanında işlenir. Doğrulama ve şifre yenileme e-postaları yapılandırılmış SMTP sağlayıcısı üzerinden gönderilir. Üretimde fotoğraflar yetkili işletmeci incelemesinden geçene kadar partner albümünde yayınlanmaz. İnternet üzerinden yapılan isteklerde IP adresi ve teknik bağlantı verileri ilgili sağlayıcılara ulaşabilir. Harita sağlayıcıları ve örnek fotoğraf servisi de bağlantı bilgilerini alabilir.
 
 ## Paylaşım ve güvenlik
 
@@ -24,11 +24,11 @@ Konum ve fotoğraf izinleri isteğe bağlıdır. Konum paylaşımı başlangıç
 
 ## Saklama ve silme
 
-Canlı konum geçmişi tutulmaz; son ölçüm saklanır. Paylaşımı durdurmak sunucudaki son koordinatı sıfırlar. Mesaj ve anılar eşleşme sürerken saklanır. Eşleşmeyi bitirmek iki kişinin ortak içeriğini; hesabı silmek buna ek olarak Auth hesabını ve özel kullanıcı kaydını kaldırır. Temizlik başarısızsa sunucu tekrar deneme kaydı tutar ve uygulama hata gösterir. Daha önce indirilmiş kopyalar geri alınamaz. Sağlayıcı günlükleri ve varsa yedeklerin saklanması etkin hizmet yapılandırmasına bağlıdır; ayrıntı için iletişime geçebilirsin.
+Canlı konum geçmişi tutulmaz; son ölçüm saklanır. Paylaşımı durdurmak sunucudaki son koordinatı sıfırlar. Mesaj ve anılar eşleşme sürerken saklanır. Eşleşmeyi bitirmek iki kişinin ortak içeriğini; hesabı silmek buna ek olarak Auth hesabını ve özel kullanıcı kaydını kaldırır. Hesap ve ortak içerik silme tek veritabanı işlemi içinde yapılır; işlem tamamlanmazsa uygulama hata gösterir. Oturumlar sunucuda yedi gün geçerlidir; çıkış ve şifre yenileme ile iptal edilir. Native oturum anahtarı cihazın güvenli deposunda, web oturumu HttpOnly çerezde tutulur. Daha önce indirilmiş kopyalar geri alınamaz. Sağlayıcı günlükleri ve varsa yedeklerin saklanması etkin hizmet yapılandırmasına bağlıdır; ayrıntı için iletişime geçebilirsin.
 
 ## Bildirimler ve engelleme
 
-Bir içerik bildirdiğinde seçtiğin gerekçe, açıklama, bildirilen mesaj veya anı notu ve ilgili hesap/içerik kimlikleri özel inceleme kuyruğuna kaydedilir. Fotoğraf ve tam koordinat bildirim kaydına kopyalanmaz. Bildirim kaydı için 30 günlük silme süresi tanımlıdır; sunucuda TTL politikasının etkin olması gerekir. Engelleme ilişkisi yeniden eşleşmeyi önlemek için hesap kimlikleriyle tutulur. Hesap silme sonrası güvenlik kaydının kaldırılması talebi için destekle iletişime geçebilirsin.
+Bir içerik bildirdiğinde seçtiğin gerekçe, açıklama, bildirilen mesaj veya anı notu ve ilgili hesap/içerik kimlikleri özel inceleme kuyruğuna kaydedilir. Fotoğraf ve tam koordinat bildirim kaydına kopyalanmaz. Bildirimler 30 gün sonra çalışan sunucunun otomatik temizlik işiyle kaldırılır. Yetkili işletmeci eylemleri için 90 günlük denetim kaydı tutulur. Engelleme ilişkisi yeniden eşleşmeyi önlemek için hesap kimlikleriyle tutulur; ilgili hesap silinince ilişki kaldırılır. Hesap silinince bildirimdeki hesap bağlantıları kaldırılır, varsa bildirilen metin 30 günlük süresi dolana kadar güvenlik incelemesi için tutulabilir.
 
 ## Yerel önizleme
 

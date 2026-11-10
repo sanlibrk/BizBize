@@ -1,79 +1,40 @@
-# Uygulama mimarisi
-
-## İstemci ve servisler
-
-Expo Router rotaları `src/app/` altında, ekran uygulamaları `src/screens/` altındadır. `src/store.tsx` oturum, önizleme ve ortak veriyi yönetir. `src/lib/firebase.ts` çalışma biçimini seçer:
-
-- `preview`: Firebase yapılandırması olmadan yerel örnek dünya.
-- `emulator`: `EXPO_PUBLIC_FIREBASE_USE_EMULATORS=1` ile yerel servisler.
-- `cloud`: Beş genel Firebase alanıyla bulut bağlantısı.
+# Mimari · Kendi API’miz
 
 ```mermaid
 flowchart LR
-  UI["Expo Router / ekranlar"] --> Store["Uygulama durumu"]
-  Store --> Auth["Firebase Authentication"]
-  Store --> API["Veri istemcisi"]
-  API --> Read["Firestore dinleyicileri"]
-  API --> Fn["Callable Cloud Functions"]
-  API --> Photo["Kimlik doğrulamalı Storage okuma"]
-  Fn --> DB["Cloud Firestore"]
-  Fn --> Storage["Cloud Storage"]
-  GPS["Expo Location / TaskManager"] --> Fn
+ UI[Expo Router / React Native] --> HTTP[HTTP istemcisi]
+ HTTP --> API[Fastify API]
+ API --> PG[PostgreSQL]
+ PG --> Queue[Şifreli e-posta kuyruğu]
+ Queue --> SMTP[SMTP / geliştirmede Mailpit]
+ Admin[Yetkili operatör CLI] --> PG
+ GPS[İzinli Expo Location görevi] --> HTTP
 ```
 
-## Veri modeli
+## Hesap ve oturum
 
-| Yol | İşlev |
-|---|---|
-| `users/{uid}` | Çift kimliği, paylaşım rızası ve paylaşım sürümü |
-| `couples/{cid}` | Üyeler, aktif/siliniyor durumu ve davet özeti |
-| `couples/{cid}/messages/{id}` | Metin veya görev; tamamlama ve anı bağlantısı |
-| `couples/{cid}/memories/{id}` | Fotoğraf yolu, tarih, not, yer ve koordinat |
-| `couples/{cid}/locations/{uid}` | Kullanıcının son konumu ve ölçüm zamanı |
-| `invites/{hash}` | Davet özeti, sahibi, sona erme ve kullanım durumu |
-| `limits/{uid}` | Davet oluşturma/katılma hız sınırları |
-| `cleanupJobs/{cid}` | Başarısız çift temizliğinin yeniden denenmesi |
+Parolalar farklı rastgele salt ve scrypt N=32768/r=8/p=1 ile hash'lenir. Oturumlar kriptografik rastgele 256 bit opak anahtarlardır; veritabanında SHA-256 özetleri tutulur. Süre yedi gündür. Web'de HttpOnly/SameSite çerez (üretimde Secure), native'de SecureStore kullanılır. Şifre sıfırlama bütün oturumları iptal eder ve konum paylaşımını kapatır. Hesap silme mevcut şifreyi ister; doğrulanmamış hesap da silinebilir.
 
-Fotoğraf yolu `couples/{cid}/{uid}/{memoryId}.jpg` biçimindedir. Sunucu JPEG kontrolü ve 10 MB sınırı uygular. Fotoğraf callable işlemle yüklenir; istemci Storage SDK üzerinden oturumuyla okur ve bellekte data URI olarak tutar.
+Altı haneli e-posta kodları kullanıcı ve amaca bağlı HMAC özetiyle saklanır. 15 dakika / en fazla beş deneme / tek kullanım uygulanır. Hatalı denemeler rollback ile kaybolmaz. E-posta kuyruğunun geçici içeriği AES-GCM ile şifrelenir; süreç SMTP hatasında yeniden dener, gizli kodları loglamaz.
 
-## Yetkilendirme
+## Veriler ve işlemler
 
-Firestore okumaları doğrulanmış e-posta ve aktif çift üyeliği gerektirir; kullanıcı kendi özel belgesini okuyabilir. Doğrudan istemci yazımları kapalıdır. Functions, Admin SDK kullandığından kimlik, üyelik ve girdi doğrulamasını kendisi yapar.
+`users`, `sessions`, `email_codes`, `mail_outbox`, `couples`, `members`, `invites`, `blocks`, `photos`, `memories`, `messages`, `locations`, `reports`, `rate_limits`, `audit_events` tabloları kullanılır. Tüm SQL değerleri parametrelidir.
 
-Davet kodu 6 rastgele bayttan üretilen 12 onaltılık karakterdir; sunucuda SHA-256 özeti saklanır. Geçerlilik 24 saat, katılım sınırı hesap başına 15 dakikada 5 deneme, oluşturma sınırı saatte 10 koddur. Üyelik değişiklikleri Firestore transaction içinde yapılır.
+Üyelik değişiklikleri ve ortak mutasyonlar transaction + ortak advisory lock ile sıralanır. `members` için kullanıcı başına tek üyelik, çift başına iki slot ve benzersizlik kısıtları vardır. Bu sade yöntem küçük MVP'de yarışları önler; yüksek yazma trafiğinde global kilit darboğaz olur ve çift bazında kilitleme tasarımı gerekir.
 
-## Sunucu işlemleri
+Çifti silmek fotoğraf, anı, mesaj ve konumları FK cascade ile aynı işlemde kaldırır; kullanıcıların çift kimlikleri null olur. Hesap silme ayrıca oturumları, kodları, posta kuyruğunu ve engelleme bağlantılarını kaldırır. Bildirimdeki hesap referansları null yapılır; kanıt metni en fazla kalan 30 günlük süresi boyunca tutulur.
 
-| Grup | Callable işlevler |
-|---|---|
-| Eşleşme | `createInvite`, `joinPair`, `disconnectPair` |
-| Mesaj/görev | `sendMessage`, `completeTask` |
-| Anı/fotoğraf | `uploadMemoryPhoto`, `discardUpload`, `addMemory`, `deleteMemory` |
-| Konum | `setLocationSharing`, `publishLocation` |
-| Hesap | `deleteAccount` |
-| Güvenlik | `reportContent`, `blockPartner` |
+## Fotoğraflar
 
-Görevle anı ilişkilendirme transaction içinde yapılır. Fotoğraf yükleme ve Firestore kaydı ayrı adımlardır; kayıt başarısız olursa istemci `discardUpload` ile sahipsiz yüklemeyi kaldırmayı dener.
+İstemci en fazla 5 MB JPEG gönderir. Sunucu gerçek decoder ile görüntüyü açar; 20 MP sınırından sonra reddeder, EXIF dahil metadata'yı çıkartarak en fazla 1600×1600 JPEG'e yeniden kodlar. Özel PostgreSQL bytea alanında tutulur. Okuma endpoint'i her istekte aktif çift üyeliğini denetler; herkese açık dosya yolu veya kalıcı URL yoktur. Üretimde insan onayından önce fotoğraf ve bağlı anıyı yalnızca sahibi inceleme etiketiyle görebilir.
 
-## Konum ve eşitleme
+## Eşitleme ve konum
 
-Konum istemcisi Expo Location ve TaskManager kullanır. Sunucu paylaşım rızası, çift kimliği, aktif iki kişilik üyelik ve paylaşım sürümünü denetler. Eski paylaşım oturumundan gelen callback yeni paylaşımı etkinleştiremez. Daha eski zamanlı ölçüm daha yeni kaydın üzerine yazılmaz.
+İstemci ön planda yaklaşık üç saniyede bir ortak veriyi yeniler; değişmemiş fotoğraflar bellekte tutulur ve aynı anda en fazla dört indirme yapılır. Çıkışta veya üyelik değişince önbellek temizlenir. Mesaj ve anılar 200 kayıtla, fotoğraflar çift başına 500 ile sınırlıdır. Gerçek çevrimdışı gönderim kuyruğu yoktur.
 
-Firestore `onSnapshot` dinleyicileri ortak veriyi taşır; bağlantı durumu arayüzde gösterilir. Mesaj ve anı sorguları en fazla 200 kayıt getirir. Fotoğraflar için bellekte önbellek bulunur; eşleşme değişiminde temizlenir.
+Konum yayınında kullanıcı rızası, aktif üyelik, paylaşım sürümü ve ölçüm zamanı doğrulanır. Durdurma sunucudaki konum kaydını siler, sürümü değiştirir. Eski callback paylaşımı geri açamaz. Sürekli konum geçmişi tutulmaz. Anı koordinatları ortak içerik olarak kalır.
 
-## Silme ve erişimi kapatma
+## Sınırlar
 
-Eşleşme bitirilirken çift `deleting` durumuna alınır, davet kaldırılır ve iki üyenin çift/paylaşım alanları sıfırlanır. Ardından Storage dosyaları ve çift belge ağacı temizlenir. Hata oluşursa `cleanupJobs` kaydı kalır; işlem yeniden denenmelidir. Zamanlanmış otomatik temizlik işlevi bu kaynakta yoktur.
-
-Hesap silme bu temizliğin ardından kullanıcı belgesini, hız sınırı kaydını ve Auth hesabını kaldırır. Silinen içeriğin cihazlara daha önce indirilmiş kopyaları geri alınamaz.
-
-## Teknik kimliklerin korunması
-
-Görünen marka **Biz Bize**'dir. `demo-yanyana`, Functions codebase adı ve bazı yerel depolama/görev anahtarları önceki teknik adları korur. Bunların topluca yeniden adlandırılması kayıtlı verileri, görevleri veya dağıtımı etkileyebilir; belge güncellemesinde değiştirilmez.
-
-[README'ye dön](../README.md)
-
-
-## İçerik güvenliği
-
-Bulut fotoğraf yüklemesi, Storage kaydından önce Cloud Vision SafeSearch kontrolünden geçer. Raporlar istemciye kapalı `reports` koleksiyonunda, bildirim hız sınırları `reportLimits` altında tutulur. `blocks` kayıtları iki yönlü yeniden eşleşmeyi transaction içinde engeller. [İşletim ve sınırlar](MODERATION.md).
+Bu kaynak ağacı dağıtılmış ve güvenlik incelemesi tamamlanmış bir hizmet beyanı değildir. Yedekleme, SMTP teslimi, insan moderasyonu, HTTPS ve gerçek iOS kabulü operasyonel gereksinimlerdir. Mesajlar uçtan uca şifreli değildir.

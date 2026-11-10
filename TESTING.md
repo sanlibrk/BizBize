@@ -1,8 +1,6 @@
-# Biz Bize · Test rehberi
+# Test rehberi · 0.2.0
 
-Bu belge testleri çalıştırma ve sonucu değerlendirme rehberidir; geçmiş bir oturumun başarı raporu değildir.
-
-## Statik kontroller ve iş kuralları
+## İstemci
 
 ```bash
 npm ci
@@ -10,66 +8,30 @@ npm run typecheck
 npm run lint
 npm test
 npm run test:release
-npm --prefix firebase/functions ci
-npm --prefix firebase/functions run build
-```
-
-`tests/domain.test.ts` saf iş kurallarını sınar. `tests/firebase.test.ts`, Firestore emülatör adresi tanımlı değilse **atlanır**. Bu nedenle tek başına `npm test` sonucunu Firebase entegrasyonu geçti diye yorumlamayın.
-
-## Firebase entegrasyon testi
-
-Node.js 22, Java 21+ ve kurulmuş Functions bağımlılıkları gerekir. Functions kodunu yukarıdaki komutla derledikten sonra:
-
-```bash
-npx firebase emulators:exec --project demo-yanyana --only auth,firestore,storage,functions "npm test"
-```
-
-CLI, test sürecine emülatör adreslerini aktarır. Test `FIRESTORE_EMULATOR_HOST=127.0.0.1:8085` bekler ve Auth için `127.0.0.1:9099` adresini doğrular. Yalnızca ortam değişkeni yazmak emülatörleri başlatmaz.
-
-Mevcut entegrasyon kapsamı:
-
-- Anonim/doğrulanmamış kullanıcının davet oluşturamaması.
-- Davet yenileme, tek kullanım ve eşzamanlı katılımda iki kişi sınırı.
-- Üyelik belgelerinin istemciden değiştirilememesi; üçüncü hesabın ortak içeriği okuyamaması.
-- Gerçek Firestore dinleyicisine mesaj ulaşması ve aynı kimlikle tekrar gönderimin çoğalmaması.
-- Fotoğrafın üçüncü kişiye/anonim kullanıcıya kapalı olması ve sahte yüklemelerin reddi.
-- Görev ile anının bağlanması, indirme tokenı dağıtılmaması, başkasının anısını silememesi.
-- Konum rızası, zaman sırası, paylaşım sürümü ve kapatma sonrası geç callback reddi.
-- Başarısız kod denemelerinin hız sınırına sayılması.
-- Eşleşme kapatma, fotoğraf/veri temizliği ve hesap silme.
-
-Emülatörler bulut IAM, faturalandırma, gerçek e-posta teslimi veya iOS GPS davranışını doğrulamaz.
-
-## Paketleme
-
-```bash
+node scripts/check-native-config.mjs
 npm run export:web
 npm run export:ios
 ```
 
-iOS export yalnızca JavaScript/varlık paketidir; imzalı native derleme veya TestFlight kabulü değildir.
+iOS export imzalı native derleme değildir. Expo CLI'nin kendi ortam dizinine erişimi olmalıdır; kısıtlı ortamlarda derleme ve browser testleri uygun izin veya CI ortamı gerektirebilir.
+
+## Backend
+
+Node.js 22.18+ ve **ayrı PostgreSQL 17 test veritabanı** gerekir. `TEST_DATABASE_URL` yalnızca adı `bizbize_test` ile başlayan test DB'sini göstermelidir. Test başlangıcı bu DB tablolarını temizler; üretim DB'si kullanmayın.
+
+```bash
+npm --prefix server ci
+npm --prefix server run build
+# Güvenli test ortamında TEST_DATABASE_URL ayarladıktan sonra:
+npm --prefix server test
+```
+
+GitHub Actions ayrı PostgreSQL service container oluşturur; gerçek SQL transaction ve kısıtlar üzerinde çalışır. Ağ olmadan statik mock testleriyle entegrasyon geçmiş sayılmaz.
+
+Kapsam: parola/oturum/kod saklama, anonim/doğrulanmamış erişim reddi, cookie/CSRF, kalıcı kod deneme sayımı, SMTP tekrar denemesi, eşzamanlı davet katılımı, mesaj idempotency, fotoğraf decode ve özel erişim, görev-anı ilişkisi, bekleyen moderasyon, konum sürümü/zaman sırası, özel bildirimler, iki yönlü engelleme, reset sonrası oturum iptali, şifre onaylı silme ve süre sonu.
 
 ## Manuel kabul
 
-| Senaryo | Başarı ölçütü |
-|---|---|
-| Yerel önizleme | Hesapsız açılır; kişiler/konumlar örnek olarak işaretlidir |
-| Boş başlangıç | Harita, sohbet ve albüm boş durumlarını düzgün gösterir |
-| Kayıt/doğrulama | Doğrulanmamış hesap ortak işlemleri yapamaz |
-| Eşleşme | A ve B aynı boş alanı açar; üçüncü hesap erişemez |
-| Mesaj/görev | Diğer oturumda görünür; görev tamamlanır ve anıya bağlanır |
-| Anı | Fotoğraf/not/tarih/yer hem albümde hem haritada aynıdır |
-| Hata akışları | Ağ kesintisi, izin reddi, geçersiz tarih ve yükleme hatası açıklanır |
-| Konum | Ön plan, arka plan, eski ölçüm ve paylaşımı durdurma iki iPhone'da denenir |
-| Eşleşme bitirme | Her iki kullanıcı ortak erişimi kaybeder |
-| Hesap silme | Auth, özel kayıt ve ortak içerik temizliği test projesinde doğrulanır |
-| Erişilebilirlik | Büyük yazı, ekran okuyucu etiketleri ve klavye akışı kontrol edilir |
+İki tarayıcı profili ve iki ayrı test hesabıyla kayıt, Mailpit kodu, eşleşme, mesaj, görev ve anı akışını deneyin. Üretim SMTP, kuyruk kesintisi, HTTPS/cookie, manuel fotoğraf onayı, destek süreci ve yedekten geri dönüşü ayrıca doğrulayın.
 
-Cihaz adımları: [IPHONE_TEST.md](IPHONE_TEST.md). Sonuç şablonu: [DEVICE_TEST_RESULTS.md](DEVICE_TEST_RESULTS.md). Başarılı/başarısız/atlanmış sonuçlarını ayrı kaydedin; anahtar ve kişisel veri eklemeyin.
-
-[README'ye dön](README.md)
-
-
-## Yayın ve kötüye kullanım kontrolleri
-
-`test:release` bağımlılıksız Node testleriyle emülatör/yer tutucu yapılandırmasını reddetmeyi ve içerik filtre kararlarını denetler. Entegrasyon testi özel bildirim kuyruğunu, kendi içeriğini/başka çift içeriğini bildirme reddini ve engelleme sonrası iki yönlü eşleşme engelini de sınar. Gerçek Cloud Vision servisi emülatörde çağrılmaz; bulut kabulü ayrıca yapılmalıdır.
+Native GPS kabulü için [iPhone rehberi](IPHONE_TEST.md), sonuç kaydı için [cihaz şablonu](DEVICE_TEST_RESULTS.md) kullanılır. Gerçek fotoğraf ve konumları kamuya açık test loglarına koymayın.

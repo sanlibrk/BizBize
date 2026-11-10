@@ -4,7 +4,7 @@ import Svg, { Path, Circle } from 'react-native-svg';
 import { ArrowRight, MapPin, Heart, LockKeyhole, ArrowLeft } from 'lucide-react-native';
 import { C, Heading, Body, Button, Field, Logo, Eyebrow } from '../components/ui';
 import { useApp } from '../store';
-import { isConfigured } from '../lib/firebase';
+import { isConfigured } from '../lib/backend';
 import { authMessage, signUp, signIn, sendReset } from '../lib/auth';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -25,9 +25,9 @@ export default function Auth() {
       if (!/^\S+@\S+\.\S+$/.test(email.trim())) throw new Error('Geçerli bir e-posta adresi gir.');
       if (mode === 'reset') {
         await sendReset(email.trim());
-        setNotice('Bu adrese bağlı bir hesap varsa şifre yenileme bağlantısı gönderildi. E-postadaki bağlantıyı tarayıcıda tamamla, sonra giriş yap.');
+        router.push({ pathname:'/password', params:{ email:email.trim() } });
       } else {
-        if (password.length < 8) throw new Error('Şifren en az 8 karakter olmalı.');
+        if (password.length < 10) throw new Error('Şifren en az 10 karakter olmalı.');
         if (mode === 'signup' && !accepted) throw new Error('Devam etmek için kullanım koşullarını kabul et.');
         if (mode === 'signup') await signUp(email.trim(), password);
         else await signIn(email.trim(), password);
@@ -58,7 +58,7 @@ export default function Auth() {
       <Pressable accessibilityRole="button" accessibilityLabel="Geri" onPress={() => setMode('welcome')} style={{ marginTop: 24, alignSelf: 'flex-start' }}><ArrowLeft color={C.ink} size={22} /></Pressable>
       <View style={{ gap: 14, marginTop: 32, marginBottom: 28 }}><Eyebrow>İKİNİZE AİT BİR ALAN</Eyebrow><Heading size={35}>{mode === 'signup' ? 'Güzel şeyler\nburada başlasın.' : mode === 'reset' ? 'Yeniden merhaba.' : 'Hoş geldin.'}</Heading><Body muted>{mode === 'signup' ? 'Hesabını oluştur, sonra davet kodunla partnerinle eşleş.' : mode === 'reset' ? 'Şifreni yenilemek için e-posta adresini gir.' : 'Ortak dünyanıza kaldığınız yerden devam edin.'}</Body></View>
       <View style={{ gap: 18 }}><Field label="E-posta" value={email} onChangeText={setEmail} placeholder="sen@ornek.com" autoCapitalize="none" keyboardType="email-address" autoComplete="email" />
-        {mode !== 'reset' && <Field label="Şifre" value={password} onChangeText={setPassword} placeholder="En az 8 karakter" secureTextEntry autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} />}
+        {mode !== 'reset' && <Field label="Şifre" value={password} onChangeText={setPassword} placeholder="En az 10 karakter" secureTextEntry autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} />}
         {!!notice && <Body style={{ color: C.pink }}>{notice}</Body>}
         {!isConfigured && <View style={s.info}><Body muted>Canlı hesap bağlantısı henüz kurulmadı. Uygulamayı aşağıdaki yerel önizlemeyle deneyebilirsin.</Body></View>}
         {mode === 'signup' && <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} onPress={() => setAccepted(value => !value)} style={{ minHeight: 44, paddingVertical: 10 }}><Body>{accepted ? '☑' : '☐'} Kullanım koşullarını kabul ediyorum; gizlilik politikasını okudum.</Body></Pressable>}

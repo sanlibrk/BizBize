@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Body, Button, Heading, Logo } from '../components/ui';
-import { authMessage, refreshVerification, resendVerification } from '../lib/auth';
-import { useApp } from '../store';
-export default function VerifyEmail() {
-  const router = useRouter();
-  const [deleting, setDeleting] = useState(false);
-  const app = useApp(); const [busy, setBusy] = useState(false); const [note, setNote] = useState('');
-  const run = async (action: () => Promise<void>) => { setBusy(true); setNote(''); try { await action(); } catch (error) { setNote(authMessage(error)); } finally { setBusy(false); } };
-  return <ScrollView contentContainerStyle={{ padding: 28, gap: 24 }}><Logo /><Heading>E-postanı doğrula.</Heading><Body>{app.session?.user.email} adresine gelen Firebase doğrulama bağlantısını tarayıcıda aç. Sonra buradaki düğmeyle devam et.</Body><Button title="E-postamı doğruladım" busy={busy} onPress={() => void run(refreshVerification)} /><Button title="Doğrulama e-postasını yeniden gönder" secondary busy={busy} onPress={() => void run(async () => { await resendVerification(); setNote('Yeni doğrulama bağlantısı gönderildi.'); })} /><Body>{note}</Body><Button title="Gizlilik politikası" secondary onPress={() => router.push('/legal')} /><Button title="Çıkış yap" secondary busy={busy} onPress={() => void run(app.exit)} /><Button title="Hesabımı sil" secondary disabled={busy} onPress={() => setDeleting(true)} />{deleting && <View style={{ gap: 12 }}><Body>Doğrulanmamış hesabın kalıcı olarak silinsin mi? Bu işlem geri alınamaz.</Body><Button title="Evet, hesabımı sil" busy={busy} onPress={() => void run(app.deleteAccount)} /><Button title="Vazgeç" secondary disabled={busy} onPress={() => setDeleting(false)} /></View>}</ScrollView>;
+import React,{useEffect,useState} from 'react';
+import {ScrollView,View} from 'react-native';
+import {useRouter} from 'expo-router';
+import {Body,Button,Field,Heading,Logo} from '../components/ui';
+import {authMessage,refreshVerification,resendVerification} from '../lib/auth';
+import {useApp} from '../store';
+import {request} from '../lib/backend';
+export default function VerifyEmail(){
+ const app=useApp(),router=useRouter();
+ const [delivery,setDelivery]=useState('Kod e-postası gönderim kuyruğuna alındı.');
+ useEffect(()=>{let stopped=false;const labels:Record<string,string>={queued:'E-posta gönderim kuyruğunda.',retrying:'Posta sağlayıcısına ulaşılamadı. Sunucu yeniden deniyor; kodun süresi dolarsa yenisini iste.',accepted:'Posta sağlayıcısı iletiyi kabul etti. Gelen kutusu, Spam ve Tüm Postalar bölümlerini kontrol et.',expired:'Kodun süresi doldu. Yeni kod iste.',verified:'E-posta doğrulandı.'};const check=async()=>{try{const result=await request<{delivery:string}>('/v1/auth/verification-status');if(!stopped)setDelivery(labels[result.delivery]||'Gönderim durumu alınamadı.');}catch{if(!stopped)setDelivery('Sunucuyla bağlantı kurulamadı.');}};void check();const timer=setInterval(()=>void check(),5000);return()=>{stopped=true;clearInterval(timer);};},[]);const [code,setCode]=useState(''),[password,setPassword]=useState(''),[busy,setBusy]=useState(false),[note,setNote]=useState(''),[deleting,setDeleting]=useState(false);
+ const run=async(action:()=>Promise<void>)=>{setBusy(true);setNote('');try{await action();}catch(e){setNote(authMessage(e));}finally{setBusy(false);}};
+ return <ScrollView contentContainerStyle={{padding:28,gap:20}} keyboardShouldPersistTaps="handled"><Logo/><Heading>E-postanı doğrula.</Heading><Body>{app.session?.user.email} adresine gelecek altı haneli kodu gir. Kod 15 dakika geçerli. Yerel geliştirmede e-postayı yerel posta kutusundan açabilirsin.</Body><Body>{delivery}</Body><Field label="Doğrulama kodu" value={code} onChangeText={value=>setCode(value.replace(/\D/g,''))} keyboardType="number-pad" maxLength={6} autoComplete="one-time-code"/><Button title="E-postamı doğrula" busy={busy} disabled={code.length!==6} onPress={()=>void run(()=>refreshVerification(code))}/><Button title="Yeni kod gönder" secondary busy={busy} onPress={()=>void run(async()=>{await resendVerification();setNote('Yeni kod e-posta gönderim kuyruğuna alındı. Önceki kod geçersizdir.');})}/><Body>{note}</Body><Button title="Gizlilik politikası" secondary onPress={()=>router.push('/legal')}/><Button title="Çıkış yap" secondary busy={busy} onPress={()=>void run(app.exit)}/><Button title="Hesabımı sil" secondary disabled={busy} onPress={()=>setDeleting(true)}/>{deleting&&<View style={{gap:12}}><Body>Hesabın kalıcı olarak silinsin mi?</Body><Field label="Mevcut şifren" value={password} onChangeText={setPassword} secureTextEntry autoComplete="current-password"/><Button title="Evet, hesabımı sil" busy={busy} disabled={!password} onPress={()=>void run(()=>app.deleteAccount(password))}/><Button title="Vazgeç" secondary onPress={()=>setDeleting(false)}/></View>}</ScrollView>;
 }
-

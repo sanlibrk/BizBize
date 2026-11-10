@@ -1,4 +1,4 @@
-name: Validate application
+name: Validate application and own backend
 on:
   push:
     branches: [main]
@@ -23,20 +23,73 @@ jobs:
       - run: node scripts/check-native-config.mjs
       - run: npm run export:web
       - run: npm run export:ios
-  firebase:
+  backend:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: isolated-test-only
+          POSTGRES_DB: bizbize_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 20
+    # Isolated local inbox; no real email recipients.
+      mail:
+        image: axllent/mailpit:v1.27
+        ports: ['1025:1025', '8025:8025']
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:isolated-test-only@localhost:5432/bizbize_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
+          cache-dependency-path: server/package-lock.json
+      - run: npm --prefix server ci
+      - run: npm --prefix server run build
+      - run: npm --prefix server audit --omit=dev --audit-level=moderate
+      - run: npm --prefix server test
       - run: npm ci
-      - run: npm --prefix firebase/functions ci
-      - run: npm run functions:build
-      - run: npm run test:firebase
+      - name: Export client against local API
+        run: npx expo export --platform web --output-dir web-test
+        env:
+          EXPO_PUBLIC_API_URL: http://127.0.0.1:3001
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Browser end-to-end with actual API and SMTP queue
+        env:
+          DATABASE_URL: postgresql://postgres:isolated-test-only@localhost:5432/bizbize_test
+          NODE_ENV: development
+          WEB_ORIGINS: http://127.0.0.1:4173
+          SMTP_HOST: 127.0.0.1
+          SMTP_PORT: '1025'
+        run: |
+          node server/dist/main.js >/tmp/bizbize-api.log 2>&1 &
+          python3 -m http.server 4173 --directory web-test >/tmp/bizbize-web.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:3001/healthz && break; sleep 1; done
+          node scripts/backend-browser-test.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-browser-results
+          path: browser-results/
+          retention-days: 3
+  local-stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm run backend:up
+      - name: Verify actual Docker setup, SMTP delivery and code verification
+        run: |
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:3001/healthz && break; sleep 2; done
+          node scripts/backend-compose-smoke.mjs
+      - name: Stop local stack
+        if: always()
+        run: npm run backend:down

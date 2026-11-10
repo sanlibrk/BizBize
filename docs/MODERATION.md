@@ -1,36 +1,44 @@
-# İçerik güvenliği ve bildirim işletimi
+# İçerik güvenliği ve operatör akışı
 
-## Uygulanan kontroller
+Üretimde yeni fotoğraflar **pending** durumunda kalır. Sunucu bu fotoğrafları ve bağlı anıları partnere açmaz; sahibi inceleme etiketini görür ve kendi anısını silebilir. Yetkili operatör inceleyip onaylar veya reddeder. Otomatik bir harici görsel analiz hizmetine bağımlılık yoktur.
 
-- Yeni hesap akışında kullanım koşullarını kabul etme kontrolü vardır.
-- Mesaj, görev ve anı metinlerinde sunucu tarafında temel açık tehdit/yasa dışı içerik örüntü filtresi uygulanır. Sınırlı bir başlangıç filtresidir; dil, bağlam ve kaçınma yöntemlerinin tamamını yakalayamaz.
-- Bulutta fotoğraf yüklemeden önce **Google Cloud Vision SafeSearch** çağrılır. Adult, violence veya racy sonucu LIKELY/VERY_LIKELY ise yükleme reddedilir. Hizmet yanıt vermiyorsa fotoğraf yayınlanmaz. Emülatör dış servisi çağırmaz.
-- Partner içeriği veya hesap, `reportContent` ile özel kuyruğa bildirilebilir. Hesap başına günlük 10 bildirim sınırı vardır; destek e-postası alternatif kanaldır.
-- `blockPartner`, ortak erişimi kapatır ve iki yönlü yeniden eşleşmeyi sunucuda engeller. Başarısız dosya temizliği erişimi geri açmaz.
-- `reports`, `reportLimits` ve `blocks` istemciler tarafından okunamaz/yazılamaz.
+Metinlerde sunucuda temel açık tehdit/yasa dışı içerik örüntü filtresi vardır; bağlamı ve bütün kaçınma yöntemlerini yakalayan bir moderasyon modeli değildir. Kullanıcılar partner, mesaj ve anı bildirebilir; bildirimler kamuya kapalıdır. Engelleme ortak alanı sonlandırır ve iki yönlü yeniden eşleşmeyi engeller.
 
-## Dağıtım öncesi
+## Operatör CLI
 
-1. Doğru Firebase/Google Cloud projesinde Cloud Vision API'yi etkinleştirin; faturalandırma ve Functions çalışma kimliğinin API çağırma yetkisini doğrulayın. Bu adım yerel kod değişikliğiyle etkinleşmez.
-2. Gerçek, güvenli bir test fotoğrafının kabul edildiğini ve servis erişimi kesilince fotoğrafın yayınlanmadığını kontrol edin. Otomatik filtrenin hatalı kararları destek üzerinden değerlendirilmelidir.
-3. Firestore'da `reports` collection group için `expires_at` alanında TTL etkinleştirin. Alan sunucuda 30 gün sonrasına Timestamp olarak yazılır. TTL anlık silme garantisi vermez.
-4. Bildirim kuyruğunu ve destek e-postasını izleyecek sorumluyu belirleyin. İlk inceleme için 24 saatlik iç operasyon hedefi koyun; bunu ölçmeden kullanıcıya SLA olarak vaat etmeyin.
-5. Bildirimin ilgili içeriğini yalnızca yetkili operatör Firebase Console'da incelemeli. Tam mesajları, fotoğrafları ve koordinatları GitHub issue veya CI loglarına kopyalamayın.
-
-## Operatör yardımcısı
-
-`firebase/functions` bağımlılıkları kurulu ve güvenli operatör ortamında Application Default Credentials yapılandırılmış olmalı. Kendi proje kimliğinizle `GCLOUD_PROJECT` ayarlayın; kimlik dosyası değerlerini depoya koymayın.
+Yalnızca yetkili sunucuda, `server/.env` içindeki veritabanı bağlantısıyla çalıştırın. Üretim DB kimlik bilgilerini istemciye vermeyin.
 
 ```bash
-cd firebase/functions
-node moderation.mjs list
-node moderation.mjs resolve REPORT_UUID
+npm --prefix server run admin -- list
+npm --prefix server run admin -- export-photo FOTO_UUID ozel-inceleme.jpg
+npm --prefix server run admin -- approve-photo FOTO_UUID
+npm --prefix server run admin -- reject-photo FOTO_UUID
+npm --prefix server run admin -- resolve-report BILDIRIM_UUID
+npm --prefix server run admin -- disable-user KULLANICI_UUID
 ```
 
-Varsayılan işlem yalnızca açık bildirimlerin kimlik/tür/tarih bilgisini listeler. `resolve` bildirimi kapatır; içerik silmez veya hesabı askıya almaz. Gerekli içerik kaldırma/hesap işlemini yetkili konsolda tamamlayıp özel kaydını tuttuktan sonra kullanın. Hesabı devre dışı bırakırken mevcut oturumların iptalini ve ortak erişimin kapatılmasını ayrıca doğrulayın.
+`list` yalnızca kimlik/tarih ve bildirim türünü listeler; özel kanıt metinlerini loglamaz. Fotoğrafı güvenli operatör bilgisayarında inceleyin, geçici kopyayı kaldırın. `reject-photo` fotoğraf ve bağlı anıyı siler. `disable-user` kullanıcının oturumlarını iptal eder ve varsa ortak alanını kapatır. Eylemler 90 günlük denetim kaydına yazılır. Bu CLI web üzerinden açık bir yönetim paneli değildir.
 
-## Yayın için insan tarafından tamamlanacaklar
+Bildirim detaylarını yalnızca sınırlandırılmış DB erişimiyle inceleyin; gerçek mesajları GitHub'a koymayın. Bildirim hesabı kapanmış olsa bile kanıt metni 30 günlük süresi dolana kadar kalabilir. Sunucunun dakikalık temizlik işi eski bildirimleri kaldırır.
 
-API etkinleştirme, gerçek bulut testi, TTL ve günlük bildirim inceleme sorumluluğu tamamlanmadan moderasyonun işletildiği söylenemez. Otomatik filtre ve bildirim düğmesi tek başına Apple kabulü garantisi değildir.
+## Yayın öncesi
 
-Kaynaklar: [Apple 1.2](https://developer.apple.com/app-store/review/guidelines/#user-generated-content), [Vision SafeSearch](https://cloud.google.com/vision/docs/detecting-safe-search), [Firestore TTL](https://firebase.google.com/docs/firestore/ttl).
+- Destek e-postasını ve inceleme kuyruğunu düzenli izleyecek sorumlu olmalı.
+- Uygunsuz içerik, rıza dışı görüntü, taciz ve tehdit durumlarına ilişkin kaldırma/hesap aksiyonu süreci belirlenmeli.
+- Onay/red, bildirim ve engelleme gerçek hizmette denenmeli.
+- Apple'ın kullanıcı içeriği kuralları gerçek deneyimle karşılaştırılmalı; bu kod tek başına kabul garantisi değildir.
+
+Geliştirme ortamı `PHOTO_MODERATION=development` ile hızlı yerel test yapar. Üretimde bu bypass ile başlatma reddedilir.
+
+[Apple kullanıcı içeriği kuralları](https://developer.apple.com/app-store/review/guidelines/#user-generated-content)
+
+## Docker üretim kurulumunda
+
+Kaynak/tsx kurmadan derlenmiş CLI kullanılabilir:
+
+```bash
+docker compose --env-file server/.env.production -f server/compose.prod.yml exec api node dist/admin.js list
+docker compose --env-file server/.env.production -f server/compose.prod.yml exec api node dist/admin.js approve-photo FOTO_UUID
+```
+
+Özel fotoğrafı incelemek için `export-photo` çıktısını yalnızca güvenli operatör dosyasına alın; geçici kopyaları işlemden sonra kaldırın.

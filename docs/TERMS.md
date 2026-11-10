@@ -1,6 +1,6 @@
 # Biz Bize · Kullanım koşulları
 
-Son güncelleme: 2026-11-06
+Son güncelleme: 2026-11-10
 
 ## İki kişilik kullanım
 

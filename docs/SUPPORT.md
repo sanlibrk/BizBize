@@ -13,10 +13,14 @@ Partneri engellemek ortak erişimi iki kişi için de kapatır ve aynı hesapla 
 
 ## Hesabınızı silme
 
-Ayarlar → **Hesabımı sil** seçeneğini açıp kalıcı silme onayını verin. Eşleşme öncesinde de hesap silme düğmesi bulunur. İşlem, hesabınızı ve varsa ortak alanınızı kaldırır; partneriniz de ortak içeriği kaybeder. Hata gösterilirse internet bağlantısıyla tekrar deneyin veya destek adresine yazın.
+Ayarlar → **Hesabımı sil** seçeneğini açıp kalıcı silme onayını verin ve mevcut şifrenizi uygulamaya girin. Eşleşme öncesinde de hesap silme düğmesi bulunur. İşlem, hesabınızı ve varsa ortak alanınızı kaldırır; partneriniz de ortak içeriği kaybeder. Hata gösterilirse internet bağlantısıyla tekrar deneyin veya destek adresine yazın.
 
 ## Konum
 
 Konum paylaşımı isteğe bağlıdır ve başlangıçta kapalıdır. Ayarlardan durdurabilir veya iOS Ayarlar → Biz Bize → Konum bölümünden izni kaldırabilirsiniz. İki dakikayı aşan konum eski gösterilir; bu durum kesin çevrimdışı tespiti değildir. Arka plan güncellemeleri işletim sistemi ve pil/ağ koşullarına bağlıdır.
 
 [Gizlilik politikası](PRIVACY.md) · [Kullanım koşulları](TERMS.md)
+
+## Yerel geliştirme
+
+Yerel kurulumda doğrulama e-postaları Gmail’e değil http://localhost:8025 adresindeki Mailpit kutusuna gider. Gerçek hesaplarla yayın için kendi API/SMTP dağıtımı gerekir.

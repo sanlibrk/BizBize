@@ -13,6 +13,7 @@ export default function Pairing() {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [password, setPassword] = useState('');
   const run = async (work: () => Promise<void>) => { setBusy(true); setNote(''); try { await work(); } catch (e) { setNote(e instanceof Error ? e.message : 'İşlem tamamlanamadı.'); } finally { setBusy(false); } };
   return <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 28, gap: 24 }} keyboardShouldPersistTaps="handled"><Logo />
     <View style={{ backgroundColor: C.pale, alignSelf: 'center', padding: 28, borderRadius: 60, marginTop: 28 }}><HeartHandshake size={42} strokeWidth={1.2} color={C.pink} /></View>
@@ -23,6 +24,7 @@ export default function Pairing() {
       : <><Body muted>Partnerinin katılmasını bekliyoruz. Katıldığında ortak haritanız açılır.</Body><Button title="Davetimi iptal et" secondary onPress={() => void run(async () => { await app.disconnect(); setInvite(''); })} /></>}
     {!!note && <Body style={{ color: C.pink }}>{note}</Body>}<Body muted style={{ fontSize: 11 }}>{app.sync}</Body><Button title="Çıkış yap" icon={LogOut} secondary onPress={() => void run(app.exit)} />
     <Button title="Hesabımı sil" secondary disabled={busy} onPress={() => setDeleting(true)} />
-    {deleting && <View style={{ gap: 12 }}><Body>Hesabın ve varsa ortak alanınız kalıcı olarak silinsin mi? Bu işlem geri alınamaz.</Body><Button title="Evet, hesabımı sil" busy={busy} onPress={() => void run(app.deleteAccount)} /><Button title="Vazgeç" secondary onPress={() => setDeleting(false)} /></View>}
+    {deleting && <View style={{ gap: 12 }}><Body>Hesabın ve varsa ortak alanınız kalıcı olarak silinsin mi? Bu işlem geri alınamaz.</Body><Field label="Mevcut şifren" value={password} onChangeText={setPassword} secureTextEntry /><Button title="Evet, hesabımı sil" busy={busy} disabled={!password} onPress={() => void run(() => app.deleteAccount(password))} /><Button title="Vazgeç" secondary onPress={() => setDeleting(false)} /></View>}
   </ScrollView>;
 }
+

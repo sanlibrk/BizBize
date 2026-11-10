@@ -25,7 +25,7 @@ export default function Report() {
     {app.preview && <Body>Yerel önizlemede gerçek bildirim veya engelleme yapılmaz.</Body>}
     {reasons.map(([value, label]) => <Button key={value} title={`${reason === value ? '✓ ' : ''}${label}`} secondary disabled={busy || sent} onPress={() => setReason(value)} />)}
     <Field label="Ek açıklama (isteğe bağlı)" value={details} onChangeText={setDetails} multiline maxLength={1000} editable={!busy && !sent} />
-    <Button title={sent ? 'Bildirim alındı' : 'Bildirimi gönder'} disabled={app.preview || sent || !app.coupleId} busy={busy} onPress={() => void run(async () => { await call('reportContent', { id: reportId, kind, content_id: params.id, reason, details }); setSent(true); setNote('Bildirim özel inceleme kuyruğuna kaydedildi. Acil destek için aşağıdaki e-posta adresini kullanabilirsin.'); })} />
+    <Button title={sent ? 'Bildirim alındı' : 'Bildirimi gönder'} disabled={app.preview || sent || !app.coupleId} busy={busy} onPress={() => void run(async () => { await call('reportContent', { id: reportId, kind, content_id: params.id ?? null, reason, details }); setSent(true); setNote('Bildirim özel inceleme kuyruğuna kaydedildi. Acil destek için aşağıdaki e-posta adresini kullanabilirsin.'); })} />
     <Heading size={25}>Partneri engelle</Heading>
     <Body>Engellemek ortak alana erişimi iki kişi için de kapatır, ortak içerikleri silme sürecini başlatır ve aynı hesapla yeniden eşleşmeyi önler. Geri alınamaz. Bildirim göndermek engellemeden ayrı bir işlemdir.</Body>
     <Button title="Partneri engelle" secondary disabled={app.preview || busy || !app.coupleId} onPress={() => setBlocking(true)} />
