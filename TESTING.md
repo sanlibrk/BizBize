@@ -15,6 +15,12 @@ npm run export:ios
 
 iOS export imzalı native derleme değildir. Expo CLI'nin kendi ortam dizinine erişimi olmalıdır; kısıtlı ortamlarda derleme ve browser testleri uygun izin veya CI ortamı gerektirebilir.
 
+## Web giriş ekranı regresyonu
+
+CI, `scripts/auth-browser-test.cjs` ile 390 ve 1280 piksel genişliklerde karşılama → giriş → kayıt → şifre yenileme → geri geçişlerini doğrular. Bir senaryoda tarayıcı çevirisi gibi başlığın metin düğümleri `<font>` elemanlarıyla değiştirilir; geçişler tarayıcı hatası vermemelidir. Bu, eski `removeChild` çökmesini yeniden üreten DOM değişikliğidir; gerçek Google Çeviri servisi otomatik testte kullanılmaz.
+
+Test ayrıca sunulan HTML'nin Türkçe dilini ve çeviriyi kapatan işaretleri JavaScript çalışmadan önce içerdiğini doğrular. SPA HTML şablonu `public/index.html` dosyasıdır. Çalışan web sunucusu ve Playwright/Chromium bulunan ortamda `AUTH_TEST_URL=http://localhost:8081 node scripts/auth-browser-test.cjs` ile çalıştırılabilir. Hesap oluşturmaz, backend gerekmez.
+
 ## Backend
 
 Node.js 22.18+ ve **ayrı PostgreSQL 17 test veritabanı** gerekir. `TEST_DATABASE_URL` yalnızca adı `bizbize_test` ile başlayan test DB'sini göstermelidir. Test başlangıcı bu DB tablolarını temizler; üretim DB'si kullanmayın.

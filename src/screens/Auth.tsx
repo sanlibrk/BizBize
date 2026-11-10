@@ -37,7 +37,7 @@ export default function Auth() {
   };
   return <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}><ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
     <View style={s.brand}><Logo /><View style={s.pill}><Text style={s.pillText}>SADECE İKİNİZE</Text></View></View>
-    {mode === 'welcome' ? <>
+    {mode === 'welcome' ? <React.Fragment key="welcome">
       <View style={s.hero}>
         <Svg width="100%" height="100%" viewBox="0 0 380 320" style={StyleSheet.absoluteFill}>
           <Path d="M-10 65 Q80 105 110 0 M-10 240 Q100 110 185 130 T400 70 M80 340 Q150 200 400 220" stroke="#DFDACF" strokeWidth="26" fill="none" />
@@ -51,10 +51,10 @@ export default function Auth() {
         <View style={s.heart}><Heart color={C.pink} size={26} strokeWidth={1.5} /></View>
         <View style={s.mapTag}><MapPin size={13} color={C.green} /><Text style={{ color: C.green, fontSize: 10 }}>İkinizin küçük dünyası</Text></View>
       </View>
-      <View style={{ gap: 14 }}><Eyebrow>HER GÜN, BİRAZ DAHA YAKIN</Eyebrow><Heading size={40}>Aynı hikâyenin{ '\n' }iki güzel yanı.</Heading><Body muted>Anılarınız bir haritada, sohbetiniz hep yanınızda. Mesafeler değişse de birbirinize yakın kalın.</Body></View>
+      <View style={{ gap: 14 }}><Eyebrow>HER GÜN, BİRAZ DAHA YAKIN</Eyebrow><Heading size={40}>{'Aynı hikâyenin\niki güzel yanı.'}</Heading><Body muted>Anılarınız bir haritada, sohbetiniz hep yanınızda. Mesafeler değişse de birbirinize yakın kalın.</Body></View>
       <View style={{ gap: 11, marginTop: 25 }}><Button title="Birlikte başlayalım" icon={ArrowRight} onPress={() => { setMode('signup'); setNotice(''); }} /><Button title="Zaten hesabım var" secondary onPress={() => { setMode('login'); setNotice(''); }} /></View>
       <Pressable accessibilityRole="button" onPress={() => void app.openPreview().catch(() => app.setError('Önizleme açılamadı.'))} style={s.preview}><Text style={s.previewText}>Örnek dünyayı keşfet <Text style={{ color: C.pink }}>↗</Text></Text><Text style={{ color: C.muted, fontSize: 10 }}>Hesapsız, açıkça işaretlenmiş yerel önizleme</Text></Pressable>
-    </> : <>
+    </React.Fragment> : <React.Fragment key="form">
       <Pressable accessibilityRole="button" accessibilityLabel="Geri" onPress={() => setMode('welcome')} style={{ marginTop: 24, alignSelf: 'flex-start' }}><ArrowLeft color={C.ink} size={22} /></Pressable>
       <View style={{ gap: 14, marginTop: 32, marginBottom: 28 }}><Eyebrow>İKİNİZE AİT BİR ALAN</Eyebrow><Heading size={35}>{mode === 'signup' ? 'Güzel şeyler\nburada başlasın.' : mode === 'reset' ? 'Yeniden merhaba.' : 'Hoş geldin.'}</Heading><Body muted>{mode === 'signup' ? 'Hesabını oluştur, sonra davet kodunla partnerinle eşleş.' : mode === 'reset' ? 'Şifreni yenilemek için e-posta adresini gir.' : 'Ortak dünyanıza kaldığınız yerden devam edin.'}</Body></View>
       <View style={{ gap: 18 }}><Field label="E-posta" value={email} onChangeText={setEmail} placeholder="sen@ornek.com" autoCapitalize="none" keyboardType="email-address" autoComplete="email" />
@@ -67,7 +67,7 @@ export default function Auth() {
         <Pressable accessibilityRole="button" onPress={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setNotice(''); }}><Text style={s.previewText}>{mode === 'signup' ? 'Hesabın var mı? Giriş yap' : 'Yeni misin? Hesap oluştur'}</Text></Pressable>
         {!isConfigured && <Button title="Yerel önizlemeyi aç" secondary onPress={() => void app.openPreview()} />}
       </View>
-    </>}
+    </React.Fragment>}
     <View style={{ gap: 10, marginTop: 18 }}><Pressable accessibilityRole="link" onPress={() => router.push('/legal')} style={{ minHeight: 44, justifyContent: 'center' }}><Text style={s.previewText}>Gizlilik politikası</Text></Pressable><Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/legal', params: { page: 'terms' } })} style={{ minHeight: 44, justifyContent: 'center' }}><Text style={s.previewText}>Kullanım koşulları ve destek</Text></Pressable></View>
     <View style={s.privacy}><LockKeyhole size={12} color={C.muted} /><Text style={{ color: C.muted, fontSize: 10 }}>İki kişilik alan. Konum paylaşımı senin kontrolünde.</Text></View>
   </ScrollView></KeyboardAvoidingView>;
