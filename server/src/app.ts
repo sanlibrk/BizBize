@@ -14,6 +14,10 @@ export async function createApp(pool:pg.Pool,cfg:Config){
  await app.register(cors,{origin:cfg.origins,credentials:true,allowedHeaders:['Content-Type','Authorization','X-BizBize-Client'],methods:['GET','POST','OPTIONS']});
  await app.register(helmet,{contentSecurityPolicy:{directives:{defaultSrc:["'none'"],frameAncestors:["'none'"]}}});
  const auth=authServices(pool,cfg);
+ const uploads=new Set<string>();
+ app.addHook('onResponse',async req=>{uploads.delete(req.id);});
+ app.addHook('onTimeout',async req=>{uploads.delete(req.id);});
+ app.addHook('onRequestAbort',async req=>{uploads.delete(req.id);});
  app.addHook('onRequest',async(req,reply)=>{
   reply.header('Cache-Control','no-store');reply.header('Referrer-Policy','no-referrer');if(req.method==='OPTIONS')return;
   if(!['GET','HEAD'].includes(req.method)){
@@ -22,7 +26,7 @@ export async function createApp(pool:pg.Pool,cfg:Config){
    if(!req.headers['content-type']?.startsWith('application/json')){reply.code(415);return reply.send({error:{message:'JSON isteği gerekli.'}});}
   }
   if(req.url!=='/healthz')await auth.rate('ip:'+req.ip,600,60);
-  if(req.url.startsWith('/v1/actions/')){const u=await auth.user(req,false);if(req.url==='/v1/actions/uploadMemoryPhoto')await auth.rate('upload:'+u.id,30,3600);}
+  if(req.url.startsWith('/v1/actions/')){const u=await auth.user(req,false);if(req.url==='/v1/actions/uploadMemoryPhoto'){await auth.rate('upload:'+u.id,30,3600);if(uploads.size>=2){reply.code(429);return reply.send({error:{message:'Fotoğraf işlemleri yoğun. Biraz sonra tekrar dene.'}});}uploads.add(req.id);}}
  });
  app.setErrorHandler((error,req,reply)=>{
   const status=error instanceof HttpError?error.status:error instanceof ZodError?400:((error as {statusCode?:number}).statusCode===413?413:(error as {statusCode?:number}).statusCode===400?400:500);
