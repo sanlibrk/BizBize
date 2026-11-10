@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-export const firebaseKeys = ['API_KEY', 'AUTH_DOMAIN', 'PROJECT_ID', 'STORAGE_BUCKET', 'APP_ID'].map(key => `EXPO_PUBLIC_FIREBASE_${key}`);
+
 export function parseEnv(contents) {
   const values = {};
   for (const line of contents.split(/\r?\n/)) {
@@ -22,8 +22,7 @@ export function releaseChecks(config, env) {
   const bundle = env.BIZBIZE_IOS_BUNDLE_IDENTIFIER || config.ios?.bundleIdentifier || '';
   const project = env.EAS_PROJECT_ID || config.extra?.eas?.projectId || '';
   return [
-    ['Firebase genel istemci yapılandırması', firebaseKeys.every(key => realValue(env[key])) && !/^demo-/.test(env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || '')],
-    ['Bulut modu (emülatör kapalı)', env.EXPO_PUBLIC_FIREBASE_USE_EMULATORS === '0'],
+    ['Üretim API adresi (HTTPS)', /^https:\/\//.test(env.EXPO_PUBLIC_API_URL||'') && realValue(env.EXPO_PUBLIC_API_URL) && !/localhost|127\.0\.0\.1|your-domain\.example/.test(env.EXPO_PUBLIC_API_URL||'')],
     ['Kullanıcıya ait iOS bundle identifier', /^(?:[A-Za-z][A-Za-z0-9-]*\.)+[A-Za-z][A-Za-z0-9-]*$/.test(bundle) && !bundle.startsWith('com.example.')],
     ['EAS proje kimliği', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(project)],
   ];

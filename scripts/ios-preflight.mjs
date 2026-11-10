@@ -24,6 +24,6 @@ const rows = [
   ...(!buildServer ? [['iOS arka plan konum yapılandırması', nativeLocation], ['Expo oturumu veya EXPO_TOKEN', expoSession || !!env.EXPO_TOKEN]] : []),
 ];
 for (const [label, ok] of rows) console.log(`${ok ? 'HAZIR' : 'EKSİK'} · ${label}`);
-console.log('MANUEL · Firebase dağıtımı, Apple imzalama, App Store Connect kaydı, moderasyon ve iki iPhone testi ayrıca doğrulanmalı.');
+console.log('MANUEL · API, PostgreSQL ve SMTP dağıtımı, Apple imzalama, App Store Connect kaydı, moderasyon ve iki iPhone testi ayrıca doğrulanmalı.');
 console.log('Bu kontrol canlı hizmetin veya gerçek cihaz davranışının kanıtı değildir.');
 process.exitCode = rows.every(([, ok]) => ok) ? 0 : 1;

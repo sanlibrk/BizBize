@@ -58,3 +58,11 @@ emulator-data/
 *firebase-adminsdk*.json
 credentials*.json
 DEVICE_TEST_RESULTS.md
+
+
+# Custom backend local state
+server/dist/
+server/.env.local
+server/.env
+server/backups/
+*.dump

@@ -3,7 +3,6 @@ import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleShee
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Map, MessageCircle, Images, Plus, Settings as SettingsIcon, ArrowUpRight, LocateFixed, Heart, Send, ListTodo, Check, MapPin, Camera, Trash2, ChevronRight } from 'lucide-react-native';
 import { useApp } from '../store';
-import { backendMode } from '../lib/firebase';
 import SharedMap from '../components/SharedMap';
 import { Body, Button, C, CloseRow, Empty, Eyebrow, Heading, IconButton, serif } from '../components/ui';
 import { dateLabel, locationState, relativeTime } from '../domain';
@@ -27,7 +26,7 @@ export default function Home({ tab }: { tab: 'map' | 'chat' | 'album' }) {
   const latest = app.data.memories[0];
   return <View style={{ flex: 1 }}>
     <View style={s.header}><View style={{ gap: 9, flex: 1, paddingRight: 10 }}><Eyebrow>İKİNİZİN DÜNYASI</Eyebrow><Heading size={31}>{tab === 'map' ? 'Birlikte, her yerde.' : tab === 'chat' ? 'Aramızda kalsın.' : 'Biriken güzellikler.'}</Heading></View><IconButton icon={SettingsIcon} label="Ayarlar ve konum paylaşımı" onPress={() => setSheet('settings')} /></View>
-    <View style={[s.modeBar, !app.preview && { backgroundColor: '#EAF0E9' }]}><View style={[s.tinyDot, { backgroundColor: app.preview ? C.pink : C.green }]} /><Text style={s.modeText}>{app.preview ? 'ÖNİZLEME · Örnek kişiler ve konumlar, canlı değil' : backendMode === 'emulator' ? 'FIREBASE EMÜLATÖRÜ · Yerel test · bulut değil' : app.sync}</Text></View>
+    <View style={[s.modeBar, !app.preview && { backgroundColor: '#EAF0E9' }]}><View style={[s.tinyDot, { backgroundColor: app.preview ? C.pink : C.green }]} /><Text style={s.modeText}>{app.preview ? 'ÖNİZLEME · Örnek kişiler ve konumlar, canlı değil' : app.sync}</Text></View>
     {!!app.error && <Pressable accessibilityRole="button" accessibilityLabel="Uyarıyı kapat" onPress={() => app.setError('')} style={{ paddingHorizontal: 24, paddingVertical: 10, backgroundColor: C.pale }}><Body style={{ color: C.pink }}>{app.error} ×</Body></Pressable>}
     {tab === 'map' && <View style={{ flex: 1 }}>
       <View style={s.people}><LocationCard me location={app.data.locations.find(l => l.user_id === app.userId)} preview={app.preview} onPress={() => setSheet('settings')} /><View style={{ width: 1, backgroundColor: C.line, marginVertical: 9 }} /><LocationCard location={app.data.locations.find(l => l.user_id !== app.userId)} preview={app.preview} onPress={() => { const partner = app.data.locations.find(l => l.user_id !== app.userId && l.sharing); if (partner) setFocus({ latitude: partner.latitude, longitude: partner.longitude }); }} /></View>

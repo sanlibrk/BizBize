@@ -2,7 +2,14 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "types": ["node", "react"]
+    "types": [
+      "node",
+      "react"
+    ]
   },
-  "exclude": ["firebase/functions", "node_modules"]
+  "exclude": [
+    "server",
+    "firebase",
+    "node_modules"
+  ]
 }

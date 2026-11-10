@@ -1,8 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
-import { onIdTokenChanged } from 'firebase/auth';
-import { firebase } from './lib/firebase';
+import { initializeSession, subscribeSession, isConfigured, forgetSession, type Session } from './lib/backend';
 import { signOutAccount } from './lib/auth';
 import { loadShared, call, saveMemory, watchShared, clearPhotoCache } from './lib/api';
 import { haltLocalTracking, resumeSharing, stopSharing } from './lib/location';
@@ -10,18 +9,17 @@ import { makeDemo, DEMO_USER, DEMO_COUPLE } from './demo';
 import { EMPTY_DATA, type MemoryDraft, type SharedData } from './types';
 
 const DEMO_KEY = 'yanyana.preview.v1';
-type Session = { user: { id: string; email: string | null; emailVerified: boolean } };
 type Store = {
   ready: boolean; session: Session | null; preview: boolean; data: SharedData; userId: string;
   coupleId?: string; sync: string; error: string; setError: (s: string) => void;
   openPreview: (empty?: boolean) => Promise<void>; exit: () => Promise<void>;
   refresh: () => Promise<void>; send: (body: string, task: boolean) => Promise<void>;
   complete: (id: string) => Promise<void>; addMemory: (draft: MemoryDraft, taskId?: string) => Promise<void>;
-  removeMemory: (id: string) => Promise<void>; disconnect: () => Promise<void>; deleteAccount: () => Promise<void>;
+  removeMemory: (id: string) => Promise<void>; disconnect: () => Promise<void>; deleteAccount: (password?: string) => Promise<void>;
 };
 const Context = createContext<Store | null>(null);
 export function Provider({ children }: { children: React.ReactNode }) {
-  const [ready, setReady] = useState(!firebase);
+  const [ready, setReady] = useState(!isConfigured);
   const [session, setSession] = useState<Session | null>(null);
   const [preview, setPreview] = useState(false);
   const [data, setData] = useState<SharedData>(EMPTY_DATA);
@@ -35,12 +33,12 @@ export function Provider({ children }: { children: React.ReactNode }) {
   const userId = preview ? DEMO_USER : session?.user.id ?? '';
   const coupleId = data.members.find(m => m.user_id === userId)?.couple_id;
   useEffect(() => {
-    if (!firebase) return;
-    return onIdTokenChanged(firebase.auth, user => {
-      if (user?.uid !== currentUser.current) { epoch.current++; clearPhotoCache(); setData(EMPTY_DATA); }
-      currentUser.current = user?.uid;
-      setSession(user ? { user: { id: user.uid, email: user.email, emailVerified: user.emailVerified } } : null); setReady(true);
-    }, () => { setError('Firebase oturumu yüklenemedi.'); setReady(true); });
+    const stop=subscribeSession(value=>{
+      if(value?.user.id!==currentUser.current){epoch.current++;clearPhotoCache();setData(EMPTY_DATA);}
+      currentUser.current=value?.user.id;setSession(value);setReady(true);
+    });
+    void initializeSession().catch(()=>setError('Sunucu oturumu yüklenemedi.')).finally(()=>setReady(true));
+    return stop;
   }, []);
   const refresh = useCallback(async () => {
     if (preview || !session?.user.emailVerified) return;
@@ -59,7 +57,8 @@ export function Provider({ children }: { children: React.ReactNode }) {
   }, [preview, session]);
   useEffect(() => {
     if (preview || !session?.user.emailVerified) return;
-    return watchShared(session.user.id, setData, setSync);
+    const watchingUser=session.user.id;
+    return watchShared(watchingUser, next=>{if(currentUser.current===watchingUser)setData(next);}, status=>{if(currentUser.current===watchingUser)setSync(status);});
   }, [preview, session]);
   useEffect(() => {
     if (preview || !session || !coupleId) return;
@@ -80,8 +79,8 @@ export function Provider({ children }: { children: React.ReactNode }) {
   };
   const exit = async () => {
     if (!preview) {
-      if (session?.user.emailVerified) await stopSharing();
-      else await haltLocalTracking();
+      if (session?.user.emailVerified) await stopSharing().catch(() => {});
+      else await haltLocalTracking().catch(() => {});
       await signOutAccount(); clearPhotoCache();
     }
     epoch.current++; setPreview(false); setData(EMPTY_DATA); setError('');
@@ -108,7 +107,7 @@ export function Provider({ children }: { children: React.ReactNode }) {
         happened_on: draft.happened_on, latitude: draft.latitude, longitude: draft.longitude,
         photo_path: '', photo_url: draft.base64 ? `data:${draft.mimeType || 'image/jpeg'};base64,${draft.base64}` : draft.uri, created_at: new Date().toISOString() }, ...d.memories].sort((a,b) => b.happened_on.localeCompare(a.happened_on)),
         messages: d.messages.map(m => m.id === taskId ? { ...m, completed_at: new Date().toISOString(), memory_id: id } : m) }));
-    } else { await saveMemory(draft, coupleId, userId, taskId); await refresh(); }
+    } else { const result=await saveMemory(draft, coupleId, userId, taskId); if(result.pending)setError('Anın kaydedildi; fotoğraf içerik incelemesinden sonra ortak albümde görünecek.'); await refresh(); }
   };
   const removeMemory = async (id: string) => {
     if (preview) setData(d => ({ ...d, memories: d.memories.filter(m => m.id !== id), messages: d.messages.map(m => m.memory_id === id ? { ...m, memory_id: null } : m) }));
@@ -123,11 +122,11 @@ export function Provider({ children }: { children: React.ReactNode }) {
     await haltLocalTracking().catch(() => {});
     await call('disconnectPair'); clearPhotoCache(); await refresh();
   };
-  const deleteAccount = async () => {
+  const deleteAccount = async (password?: string) => {
     if (preview) { await AsyncStorage.removeItem(DEMO_KEY); await exit(); return; }
     await haltLocalTracking().catch(() => {});
-    await call('deleteAccount');
-    await signOutAccount(); clearPhotoCache(); epoch.current++; setSession(null); setData(EMPTY_DATA);
+    await call('deleteAccount', { password });
+    await forgetSession(); clearPhotoCache(); epoch.current++; setSession(null); setData(EMPTY_DATA);
   };
   return <Context.Provider value={{ ready, session, preview, data, userId, coupleId, sync, error, setError, openPreview, exit, refresh, send, complete, addMemory, removeMemory, disconnect, deleteAccount }}>{children}</Context.Provider>;
 }
