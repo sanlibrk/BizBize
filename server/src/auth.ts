@@ -6,6 +6,7 @@ import type { Config } from './config.js';
 import { transaction,serialize } from './db.js';
 import { fail,hash,token,passwordHash,passwordMatches,codeHash } from './security.js';
 import { queueCode } from './mail.js';
+import { clientIp } from './runtime-policy.js';
 export type User={id:string;email:string;email_verified:boolean;couple_id:string|null;sharing:boolean;sharing_version:string;password_hash:string;disabled:boolean};
 export const emailSchema=z.string().trim().toLowerCase().email().max(254);
 export const passwordSchema=z.string().min(10,'Şifre en az 10 karakter olmalı.').max(128);
@@ -45,9 +46,10 @@ export function authServices(pool:pg.Pool,cfg:Config){
   });if(!result)fail(400,'Kod geçersiz, süresi dolmuş veya deneme sınırına ulaşılmış. Yeni kod iste.');
  }
  function routes(app:FastifyInstance){
+  if(cfg.serverless)app.post('/v1/auth/mail-delivery',async req=>{z.object({}).strict().parse(req.body);await rate('mail-delivery:'+clientIp(req,cfg),6,60);return {accepted:true};});
   app.post('/v1/auth/register',async(req,reply)=>{
    const body=z.object({email:emailSchema,password:passwordSchema,terms_version:z.literal('2026-11-10')}).strict().parse(req.body);
-   await rate('register:'+req.ip,5,3600);await rate('register-email:'+body.email,3,600);
+   await rate('register:'+clientIp(req,cfg),5,3600);await rate('register-email:'+body.email,3,600);
    const pw=await passwordHash(body.password),id=randomUUID();
    const u=await transaction(pool,async db=>{
     const r=await db.query('INSERT INTO users(id,email,password_hash,sharing_version,terms_version) VALUES($1,$2,$3,$4,$5) ON CONFLICT(email) DO NOTHING RETURNING *',[id,body.email,pw,randomUUID(),body.terms_version]);
@@ -57,7 +59,7 @@ export function authServices(pool:pg.Pool,cfg:Config){
   });
   app.post('/v1/auth/login',async(req,reply)=>{
    const body=z.object({email:emailSchema,password:z.string().min(1).max(128)}).strict().parse(req.body);
-   await rate('login-email:'+body.email,10,900);await rate('login-ip:'+req.ip,40,900);
+   await rate('login-email:'+body.email,10,900);await rate('login-ip:'+clientIp(req,cfg),40,900);
    const r=await pool.query('SELECT * FROM users WHERE email=$1',[body.email]);const u=r.rows[0] as User|undefined;
    const dummy='scrypt$32768$00000000000000000000000000000000$'+'00'.repeat(64);
    const correct=await passwordMatches(body.password,u?.password_hash||dummy);
@@ -79,11 +81,11 @@ export function authServices(pool:pg.Pool,cfg:Config){
   app.post('/v1/auth/resend',async req=>{const u=await user(req,false);await rate('verify-send:'+u.id,3,600);if(!u.email_verified)await transaction(pool,db=>queueCode(db,cfg,u,'verify'));return {queued:true};});
   app.post('/v1/auth/verify',async req=>{const u=await user(req,false);const {code}=z.object({code:z.string().regex(/^\d{6}$/)}).strict().parse(req.body);await rate('verify-attempt:'+u.id,10,900);await consume(u.email,'verify',code);return {verified:true};});
   app.post('/v1/auth/forgot',async req=>{
-   const {email}=z.object({email:emailSchema}).strict().parse(req.body);await rate('reset-ip:'+req.ip,10,3600);await rate('reset-email:'+email,3,600);
+   const {email}=z.object({email:emailSchema}).strict().parse(req.body);await rate('reset-ip:'+clientIp(req,cfg),10,3600);await rate('reset-email:'+email,3,600);
    const r=await pool.query('SELECT * FROM users WHERE email=$1 AND NOT disabled',[email]);if(r.rows[0])await transaction(pool,db=>queueCode(db,cfg,r.rows[0],'reset'));return {queued:true};
   });
   app.post('/v1/auth/reset',async req=>{
-   const b=z.object({email:emailSchema,code:z.string().regex(/^\d{6}$/),password:passwordSchema}).strict().parse(req.body);await rate('reset-attempt:'+req.ip,20,900);await consume(b.email,'reset',b.code,b.password);return {reset:true};
+   const b=z.object({email:emailSchema,code:z.string().regex(/^\d{6}$/),password:passwordSchema}).strict().parse(req.body);await rate('reset-attempt:'+clientIp(req,cfg),20,900);await consume(b.email,'reset',b.code,b.password);return {reset:true};
   });
   app.post('/v1/auth/password',async req=>{
    const u=await user(req,false),b=z.object({current_password:z.string().min(1).max(128),password:passwordSchema}).strict().parse(req.body);await rate('change-password:'+u.id,5,900);

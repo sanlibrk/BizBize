@@ -162,3 +162,9 @@ Bu edisyon, kimlikten silmeye kadar iş kurallarının uygulama tarafından aç�
 Ölçek ve yayın öncesi çalışmalar arasında çift bazında eşzamanlılık tasarımı, sayfalama, bytea’dan ayrı nesne deposuna geçiş değerlendirmesi, ölçülmüş yük testi, sorgulama yerine olay tabanlı dağıtım seçeneği, üretim posta teslimi, yedekten geri yükleme, bağımsız güvenlik incelemesi ve gerçek iPhone kabulü bulunur. Bunlar tamamlanmış özellik veya elde edilmiş deneysel sonuç olarak sunulmaz.
 
 **İlgili belgeler:** [API sözleşmesi](API.md) · [Mimari özeti](ARCHITECTURE.md) · [Güvenlik](SECURITY.md) · [Moderasyon](MODERATION.md) · [Yayın kontrol listesi](RELEASE_CHECKLIST.md) · [Firebase edisyonu](FIREBASE_EDITION.md)
+
+## 12. Ücretsiz pilot dağıtım profili
+
+Ana API ve PostgreSQL modeli korunarak Vercel Hobby/Neon Free için ayrı bir sunucusuz giriş eklendi. Bu profil DDL işlemini başlatma adımına taşır, küçük bağlantı havuzu kullanır, 3 MiB fotoğraf sınırı uygular ve istemci sorgulamasını 15 saniyeye çıkarır. Posta periyodik süreç yerine hesap isteklerine bağlı sınırlı işlenir; şifre yenilemede anonim kuyruk ilerletme isteği bulunur. Fiziksel saklama temizliği günlük ve özel bir cron anahtarına bağlıdır. Docker profilinin sürekli posta/temizlik süreçleri ve varsayılan sınırları korunur.
+
+Bu uyarlama yerel/CI doğrulamasıyla değerlendirilebilir; gerçek Vercel dağıtımı, Neon hesabı, gerçek SMTP teslimi ve iPhone kabulü ayrıca gereklidir. Hobby kişisel/ticari olmayan kullanım şartı ve iki sağlayıcının kotaları ürün kapasitesini sınırlar. [Pilot kurulum rehberi](FREE_PILOT_DEPLOY.md).

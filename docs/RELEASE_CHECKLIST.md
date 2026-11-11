@@ -11,6 +11,8 @@
 - [x] Gizlilik/koşullar/destek, mağaza metni ve inceleme notları.
 - [x] CI'da gerçek PostgreSQL ve istemci doğrulamaları.
 
+Ücretsiz kişisel ilk sürüm için [Vercel/Neon pilot yolu](FREE_PILOT_DEPLOY.md) hazırlanmıştır; hesaplar ve gerçek dağıtım ayrıca doğrulanmalıdır. Bu yol seçilirse aşağıdaki sunucu/alan adı maddesi, sağlayıcının verdiği HTTPS adresi ve sunucusuz API/DB kurulumu olarak değerlendirilir.
+
 ## Canlı yayın öncesi tamamlanacaklar
 
 - [ ] Kullanıcıya ait sunucu ve alan adı sağlandı; API/DB/HTTPS dağıtıldı.

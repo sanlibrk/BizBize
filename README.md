@@ -14,7 +14,7 @@ Firebase ve bağımsız PostgreSQL backend uygulamalarını karşılaştıran bi
 [![Doğrulama](https://github.com/sanlibrk/BizBize/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/sanlibrk/BizBize/actions/workflows/validate.yml)
 [![Lisans: MIT](https://img.shields.io/badge/Lisans-MIT-527A72)](LICENSE)
 
-[Güncel backend](docs/BACKEND_EDITION.md) · [Firebase sürümü](docs/FIREBASE_EDITION.md) · [Karşılaştırmalı rapor](docs/CASE_STUDY.md) · [Dokümantasyon](docs/README.md) · [Hızlı başlangıç](#hızlı-başlangıç)
+[Ücretsiz pilot kurulumu](docs/FREE_PILOT_DEPLOY.md) · [Güncel backend](docs/BACKEND_EDITION.md) · [Firebase sürümü](docs/FIREBASE_EDITION.md) · [Karşılaştırmalı rapor](docs/CASE_STUDY.md) · [Dokümantasyon](docs/README.md) · [Hızlı başlangıç](#hızlı-başlangıç)
 
 </div>
 
@@ -116,7 +116,9 @@ Backend entegrasyon testleri ayrıca ayrılmış test PostgreSQL’i gerektirir.
 
 ## Bilinen sınırlar ve yayın durumu
 
-Güncel sürüm ortak veriyi ön planda yaklaşık üç saniyede bir sorgular. Mesaj/anı listeleri 200 kayıtla, fotoğraflar çift başına 500 ile sınırlıdır; eski kayıtlar için sayfalama arayüzü henüz yoktur. Fotoğrafların PostgreSQL `bytea` alanında tutulması ve ortak mutasyonların global kilitle sıralanması küçük MVP’ye yönelik tercihlerdir. Mesajlar uçtan uca şifreli değildir.
+Güncel sürüm ortak veriyi varsayılan Docker profilinde ön planda yaklaşık üç saniyede bir, ücretsiz sunucusuz pilot profilinde on beş saniyede bir sorgular. Pilot profilinde JPEG yüklemeleri 3 MiB ile sınırlanır. Mesaj/anı listeleri 200 kayıtla, fotoğraflar çift başına 500 ile sınırlıdır; eski kayıtlar için sayfalama arayüzü henüz yoktur. Fotoğrafların PostgreSQL `bytea` alanında tutulması ve ortak mutasyonların global kilitle sıralanması küçük MVP’ye yönelik tercihlerdir. Mesajlar uçtan uca şifreli değildir.
+
+Kişisel, ücretsiz ve reklamsız ilk sürüm için [Vercel Hobby + Neon Free pilot rehberi](docs/FREE_PILOT_DEPLOY.md) ve ayrı sunucusuz giriş dosyası eklendi. Bu bir canlı dağıtım veya sınırsız ücretsiz hizmet beyanı değildir.
 
 **Yerel geliştirme ve otomatik kontroller mevcut; canlı bulut dağıtımı ve App Store yayını doğrulanmış değildir.** Üretimde HTTPS, gerçek e-posta sağlayıcısı, yedekleme/geri yükleme, izleme ve insan moderasyonu yapılandırılmalıdır. Barındırma hizmetinin uygun HTTPS adresi kullanılabilir; bağımsız alan adı satın almak her pilot kurulum için zorunlu değildir. Ücretsiz kotalar ve öğrenci kredileri kalıcı ücretsiz hizmet garantisi vermez.
 

@@ -40,3 +40,9 @@ Konum yayınında kullanıcı rızası, aktif üyelik, paylaşım sürümü ve �
 ## Sınırlar
 
 Bu kaynak ağacı dağıtılmış ve güvenlik incelemesi tamamlanmış bir hizmet beyanı değildir. Yedekleme, SMTP teslimi, insan moderasyonu, HTTPS ve gerçek iOS kabulü operasyonel gereksinimlerdir. Mesajlar uçtan uca şifreli değildir.
+
+## Sunucusuz pilot profili
+
+`DEPLOYMENT_MODE=serverless` için `server/api/index.ts` istek girişini, `server/src/serverless.ts` küçük ve yeniden kullanılan bağlantı havuzunu sağlar. Schema kurulumda ayrı doğrudan owner bağlantısıyla hazırlanır; istek anında migration yapılmaz. API sınırlı DB rolünü kullanır. E-posta kuyruğundan en fazla bir uygun ileti ilgili hesap isteğiyle işlenir; Vercel’de yanıt sonrasını kapsayan resmî `waitUntil` yaşam döngüsü kullanılır, yerel adaptörde yanıt öncesinde beklenir; sürekli arka plan interval’i yoktur. Şifre yenileme ekranı anonim ve e-posta parametresiz bir retry isteğiyle kuyruğun ilerlemesini sağlar; yeni ileti oluşturmaz. Günlük temizlik endpoint’i bağımsız cron sırrıyla korunur.
+
+İstemcide `EXPO_PUBLIC_DEPLOYMENT_MODE=serverless` yüklemeyi 3 MiB ve ön plan sorgulamasını 15 saniye olarak ayarlar. Varsayılan Docker profili 5 MiB/3 saniyedir. Sunucusuz fiziksel temizlik günlük olduğundan logical expiry ile silme arasında ek zaman vardır. [Koşullar ve kurulum](FREE_PILOT_DEPLOY.md).

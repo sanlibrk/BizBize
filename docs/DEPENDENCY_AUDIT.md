@@ -20,3 +20,7 @@ npm --prefix server audit --omit=dev
 ```
 
 `npm audit fix --force` sürüm uyumunu bozabilir; otomatik uygulanmamalıdır. Nihai imzalı native paketin SDK/privacy manifest incelemesi ve gerçek cihaz kabulü ayrıca gereklidir.
+
+## 11 Kasım 2026 · Sunucusuz profil
+
+Resmî `@vercel/functions` yaşam döngüsü yardımcıları eklendikten sonra backend üretim bağımlılıkları yeniden tarandı: **0 bildirim**. Bu sonuç Vercel’de gerçek dağıtım veya bağımsız güvenlik incelemesi anlamına gelmez.
