@@ -1,5 +1,7 @@
 # Mimari · Kendi API’miz
 
+Bu özet aktif `main` sürümünü açıklar. [İki mimarinin karşılaştırması](CASE_STUDY.md), [Firebase raporu](FIREBASE_EDITION.md) ve [güncel backend raporu](BACKEND_EDITION.md) aynı ürünün iki uygulamasını ayrıntılı inceler.
+
 ```mermaid
 flowchart LR
  UI[Expo Router / React Native] --> HTTP[HTTP istemcisi]
