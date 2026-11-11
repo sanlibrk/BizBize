@@ -1,3 +1,11 @@
+> **Firebase sürümü · Tarihsel inceleme dalı**
+>
+> Bu dal Biz Bize’nin Firebase uygulamasını korur. Aktif geliştirme **[kendi backend sürümünde, main dalında](https://github.com/sanlibrk/BizBize/tree/main)** devam eder.
+>
+> [Firebase teknik raporu](https://github.com/sanlibrk/BizBize/blob/main/docs/FIREBASE_EDITION.md) · [İki mimarinin karşılaştırması](https://github.com/sanlibrk/BizBize/blob/main/docs/CASE_STUDY.md) · [Sürüm rehberi](https://github.com/sanlibrk/BizBize/blob/main/docs/VERSIONS.md)
+>
+> Aşağıdaki açıklama ve komutlar tarihsel Firebase sürümüne aittir. Değişmez kaynak temeli [Firebase anlık görüntüsüdür](https://github.com/sanlibrk/BizBize/tree/0692aaa4a6a62ad3efbd6d29e54a9e24a2dc73a7). Bu arşivleme bulut projesi oluşturmaz, veri taşımaz ve mevcut Firebase projesini değiştirmez.
+
 <div align="center">
 
 <img src="assets/icon.png" alt="Biz Bize uygulama simgesi" width="96" />
