@@ -50,9 +50,12 @@ jobs:
           cache-dependency-path: server/package-lock.json
       - run: npm --prefix server ci
       - run: npm --prefix server run build
+      - run: npm --prefix server run typecheck
       - run: npm --prefix server audit --omit=dev --audit-level=moderate
       - run: npm --prefix server test
       - run: npm ci
+      - name: Bootstrap and test actual serverless HTTP adapter
+        run: node --import tsx scripts/serverless-smoke.mjs
       - name: Export client against local API
         run: npx expo export --platform web --output-dir web-test
         env:

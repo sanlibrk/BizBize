@@ -68,3 +68,6 @@ server/backups/
 *.dump
 
 !server/.env.production.example
+
+# Public serverless environment template only; real bootstrap/runtime files stay private.
+!server/.env.serverless.example

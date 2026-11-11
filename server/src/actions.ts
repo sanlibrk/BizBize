@@ -34,9 +34,9 @@ export function actionRoutes(app:FastifyInstance,pool:pg.Pool,cfg:Config,auth:Au
   return {members:p.members,memories,messages,locations};
  });});
  app.get('/v1/photos/:id',async req=>{const u=await auth.user(req),photo=id.parse((req.params as {id:string}).id);
-  const r=await pool.query("SELECT p.bytes FROM photos p JOIN members m ON m.couple_id=p.couple_id WHERE p.id=$1 AND m.user_id=$2 AND (p.status='approved' OR (p.status='pending' AND p.owner_id=$2))",[photo,u.id]);if(!r.rowCount)fail(404,'Fotoğraf bulunamadı.');return {base64:(r.rows[0].bytes as Buffer).toString('base64')};
+  const r=await pool.query("SELECT p.bytes FROM photos p JOIN members m ON m.couple_id=p.couple_id WHERE p.id=$1 AND m.user_id=$2 AND (p.status='approved' OR (p.status='pending' AND p.owner_id=$2))",[photo,u.id]);if(!r.rowCount)fail(404,'Fotoğraf bulunamadı.');const bytes=r.rows[0].bytes as Buffer;if(cfg.serverless&&bytes.length>cfg.maxPhotoBytes)fail(413,'Bu fotoğraf bu sunucunun boyut sınırını aşıyor.');return {base64:bytes.toString('base64')};
  });
- app.post('/v1/actions/:action',{bodyLimit:8*1024*1024},async(req,reply)=>{
+ app.post('/v1/actions/:action',{bodyLimit:cfg.serverless?4*1024*1024+16384:8*1024*1024},async(req,reply)=>{
   const name=(req.params as {action:string}).action,u=await auth.user(req,false),input=(req.body??{}) as Record<string,unknown>;
   const mutate=<T>(work:(db:DB)=>Promise<T>)=>tx(async db=>{await auth.user(req,false,db);return work(db);});
   if(!u.email_verified&&name!=='deleteAccount'&&!(name==='setLocationSharing'&&input.enabled===false))fail(403,'Önce e-posta adresini doğrula.');
@@ -69,10 +69,10 @@ export function actionRoutes(app:FastifyInstance,pool:pg.Pool,cfg:Config,auth:Au
    const b=z.object({id}).strict().parse(input);return mutate(async db=>{const p=await pair(db,u.id),r=await db.query("UPDATE messages SET completed_at=COALESCE(completed_at,now()) WHERE id=$1 AND couple_id=$2 AND kind='task'",[b.id,p.cid]);if(!r.rowCount)fail(404,'Görev bulunamadı.');return {completed:true};});
   }
   if(name==='uploadMemoryPhoto'){
-   const b=z.object({id,photo_base64:z.string().min(4).max(6990508).regex(/^[A-Za-z0-9+/]+={0,2}$/)}).strict().parse(input);await mutate(db=>pair(db,u.id));
-   const raw=Buffer.from(b.photo_base64,'base64');if(raw.length>5242880||raw[0]!==255||raw[1]!==216||raw[2]!==255)fail(400,'En fazla 5 MB boyutunda JPEG fotoğraf seç.');
+   const b=z.object({id,photo_base64:z.string().min(4).max(Math.ceil(cfg.maxPhotoBytes/3)*4).regex(/^[A-Za-z0-9+/]+={0,2}$/)}).strict().parse(input);await mutate(db=>pair(db,u.id));
+   const raw=Buffer.from(b.photo_base64,'base64');if(raw.length>cfg.maxPhotoBytes||raw[0]!==255||raw[1]!==216||raw[2]!==255)fail(400,`En fazla ${cfg.maxPhotoBytes/1024/1024} MB boyutunda JPEG fotoğraf seç.`);
    let bytes:Buffer;try{bytes=await sharp(raw,{limitInputPixels:20000000,failOn:'warning'}).rotate().resize({width:1600,height:1600,fit:'inside',withoutEnlargement:true}).jpeg({quality:82}).toBuffer();}catch{fail(400,'Geçerli bir JPEG fotoğraf seç.');}
-   return mutate(async db=>{const p=await pair(db,u.id);if((await db.query('SELECT count(*)::integer n FROM photos WHERE couple_id=$1',[p.cid])).rows[0].n>=500)fail(409,'500 fotoğraf sınırına ulaştınız.');const status=cfg.photoMode==='manual'?'pending':'approved';
+   return mutate(async db=>{const p=await pair(db,u.id);if((await db.query('SELECT count(*)::integer n FROM photos WHERE couple_id=$1',[p.cid])).rows[0].n>=500)fail(409,'500 fotoğraf sınırına ulaştınız.');if(bytes.length>cfg.maxPhotoBytes)fail(400,'İşlenen fotoğraf sunucu boyut sınırını aşıyor.');const status=cfg.photoMode==='manual'?'pending':'approved';
     const r=await db.query('INSERT INTO photos(id,couple_id,owner_id,bytes,status) VALUES($1,$2,$3,$4,$5) ON CONFLICT(id) DO NOTHING RETURNING id',[b.id,p.cid,u.id,bytes,status]);if(!r.rowCount)fail(409,'Fotoğraf kimliği kullanılmış.');return {path:b.id,status};});
   }
   if(name==='discardUpload'){

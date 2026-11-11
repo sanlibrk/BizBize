@@ -42,3 +42,7 @@ docker compose --env-file server/.env.production -f server/compose.prod.yml exec
 ```
 
 Özel fotoğrafı incelemek için `export-photo` çıktısını yalnızca güvenli operatör dosyasına alın; geçici kopyaları işlemden sonra kaldırın.
+
+## Sunucusuz pilotta saklama
+
+Bu profilde temizlik dakikalık süreç yerine günde bir çalışan yetkili endpoint ile yapılır. Bildirimlerin inceleme süresi 30 gündür; admin listesi süresi dolmuş bildirimleri göstermez. Fiziksel kaldırma bir sonraki günlük temizlikte gerçekleşir (normalde en fazla bir gün ek aralık); başarısız cron işi işletmeci tarafından takip edilmelidir. Gizlilik metni ve yedek saklaması bu davranışla birlikte değerlendirilir.

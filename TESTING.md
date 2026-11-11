@@ -41,3 +41,7 @@ Kapsam: parola/oturum/kod saklama, anonim/doğrulanmamış erişim reddi, cookie
 İki tarayıcı profili ve iki ayrı test hesabıyla kayıt, Mailpit kodu, eşleşme, mesaj, görev ve anı akışını deneyin. Üretim SMTP, kuyruk kesintisi, HTTPS/cookie, manuel fotoğraf onayı, destek süreci ve yedekten geri dönüşü ayrıca doğrulayın.
 
 Native GPS kabulü için [iPhone rehberi](IPHONE_TEST.md), sonuç kaydı için [cihaz şablonu](DEVICE_TEST_RESULTS.md) kullanılır. Gerçek fotoğraf ve konumları kamuya açık test loglarına koymayın.
+
+## Sunucusuz pilot
+
+`server/tests/serverless.test.ts` gerçek PostgreSQL üzerinde isteğe bağlı SMTP işlemini, başarısız gönderimin kalıcı tekrarını, anonim reset kuyruğunu, cron sırrını/temizliği, profil fotoğraf sınırlarını ve IP başlığı denetimini sınar. Bu testin geçmesi Vercel hesabında dağıtım yapıldığı anlamına gelmez. Sunucusuz giriş dosyası `npm --prefix server run typecheck` ile ayrıca kontrol edilir. Gerçek sağlayıcı kabul adımları [pilot rehberindedir](docs/FREE_PILOT_DEPLOY.md).

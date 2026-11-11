@@ -1,6 +1,6 @@
 # Biz Bize · Gizlilik politikası
 
-Son güncelleme: 2026-11-10
+Son güncelleme: 2026-11-11
 
 ## Hizmet ve iletişim
 
@@ -28,7 +28,7 @@ Canlı konum geçmişi tutulmaz; son ölçüm saklanır. Paylaşımı durdurmak 
 
 ## Bildirimler ve engelleme
 
-Bir içerik bildirdiğinde seçtiğin gerekçe, açıklama, bildirilen mesaj veya anı notu ve ilgili hesap/içerik kimlikleri özel inceleme kuyruğuna kaydedilir. Fotoğraf ve tam koordinat bildirim kaydına kopyalanmaz. Bildirimler 30 gün sonra çalışan sunucunun otomatik temizlik işiyle kaldırılır. Yetkili işletmeci eylemleri için 90 günlük denetim kaydı tutulur. Engelleme ilişkisi yeniden eşleşmeyi önlemek için hesap kimlikleriyle tutulur; ilgili hesap silinince ilişki kaldırılır. Hesap silinince bildirimdeki hesap bağlantıları kaldırılır, varsa bildirilen metin 30 günlük süresi dolana kadar güvenlik incelemesi için tutulabilir.
+Bir içerik bildirdiğinde seçtiğin gerekçe, açıklama, bildirilen mesaj veya anı notu ve ilgili hesap/içerik kimlikleri özel inceleme kuyruğuna kaydedilir. Fotoğraf ve tam koordinat bildirim kaydına kopyalanmaz. Bildirimlerin inceleme süresi 30 gündür; süresi dolan bildirimler inceleme listesinden çıkarılır ve otomatik temizlikle kaldırılır. Yetkili işletmeci eylemleri için 90 günlük denetim kaydı tutulur. Sunucusuz pilotta fiziksel temizlik günlük zamanlanır; süre sonuna ek olarak bir günlük temizlik aralığı oluşabilir. Zamanlanmış iş kesintisinde temizlik gecikebilir ve işletmeci müdahalesi gerekir. Engelleme ilişkisi yeniden eşleşmeyi önlemek için hesap kimlikleriyle tutulur; ilgili hesap silinince ilişki kaldırılır. Hesap silinince bildirimdeki hesap bağlantıları kaldırılır, varsa bildirilen metin 30 günlük süresi dolana kadar güvenlik incelemesi için tutulabilir.
 
 ## Yerel önizleme
 

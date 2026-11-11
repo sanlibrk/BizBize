@@ -1,5 +1,7 @@
 # Kendi backend’imizi çalıştırma
 
+Kişisel, reklamsız ve ücretsiz ilk sürüm için [sunucusuz pilot rehberi](FREE_PILOT_DEPLOY.md) ayrı bir kurulum yoludur. Aşağıdaki Docker/VPS akışı geçerliliğini korur; iki ortamın sırları ve çalışma modeli farklıdır.
+
 ## Windows üzerinde yerel kullanım
 
 Node.js 22.18+, npm ve Linux container modu açık Docker Desktop gerekir. Docker Desktop çalışırken proje kökünde:

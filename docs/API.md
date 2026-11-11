@@ -55,3 +55,13 @@ Konum kapatma ve hesap silme dışındaki ortak işlemler doğrulanmış e-posta
 ```
 
 400 geçersiz veri/kod, 401 oturum yok/geçersiz, 403 yetki/rıza/kaynak reddi, 404 bulunamadı, 409 iş kuralı çakışması, 413 boyut aşımı, 429 hız/kapasite sınırı, 500 beklenmeyen sunucu hatası. Stack trace ve SQL ayrıntıları yanıtlanmaz. UUID seçimi tek başına yetki kanıtı değildir.
+
+## Sunucusuz pilot profili
+
+`DEPLOYMENT_MODE=serverless` modunda JPEG raw sınırı 3 MiB, action JSON gövde sınırı 4 MiB + 16 KiB’dir; böylece base64 yükü platformun 4,5 MB sınırının altında kalır. Eski daha büyük özel fotoğraf yanıtı 413 ile reddedilir.
+
+- `POST /v1/auth/mail-delivery` yalnızca boş JSON alır, `accepted: true` döner ve en fazla bir mevcut, süresi geçmemiş ve zamanı gelmiş iletiyi gönderme denemesini tetikler. Kullanıcı e-postası/kod/ileti sayısı döndürmez, yeni e-posta oluşturmaz; IP başına dakikada altı istek sınırı vardır.
+- `GET /internal/maintenance` tam eşleşen `Authorization: Bearer CRON_SECRET` ister; süre dolmuş verileri temizler. Native oturum anahtarı bu yönetim sırrının yerine geçmez.
+- Kayıt, resend, forgot ve verification-status istekleri de kuyruktaki en fazla bir uygun iletiyi işler; Vercel’de gönderim `waitUntil` ile yanıt yaşam döngüsünden ayrılır; SMTP başarısızlığı oturumu/kayıt yanıtını iptal etmez ve şifreli kuyruk tekrar denemeye kalır.
+
+[Dağıtım ve sınırlar](FREE_PILOT_DEPLOY.md).

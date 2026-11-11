@@ -31,3 +31,9 @@ Güvenlik sorunu bildirmek için [destek adresini](SUPPORT.md) kullanın; herkes
 ## Bilinen bağımlılık bulguları
 
 Backend üretim taraması sıfır bildirimle sonuçlandı. Expo geliştirme/paketleme zincirindeki beş orta önem dereceli bildirim, uyumlu upstream düzeltme bekleyen artık risktir. Ayrıntı ve uygulanan sürüm düzeltmeleri [bağımlılık taraması kaydında](DEPENDENCY_AUDIT.md). Bu bulgular saklanmaz ve sıfır açık iddiasında bulunulmaz.
+
+## Sunucusuz profil
+
+Kuyruk ilerletme endpoint’i anonimdir; hesap veya e-posta parametresi almaz, yeni ileti oluşturmaz ve mevcut gönderim/backoff sınırlarını aşmaz. SMTP denemesi sınırlı süreyle işlenir; Vercel’de resmî `waitUntil` ile yanıt gecikmesinden ayrılır. Bu, şifre yenilemede SMTP süresinin hesap varlığına bağlı belirgin bir zamanlama sinyali olmasını önler; genel API kötüye kullanım incelemesinin yerine geçmez. Cron endpoint’i bağımsız rastgele anahtar ve sabit zamanlı karşılaştırmayla korunur. Vercel dışındaki isteklerde kullanıcı tarafından gönderilen Vercel/forwarded başlıkları yetkili IP kaynağı sayılmaz; Vercel runtime içinde yalnızca platformun üzerine yazdığı tek, geçerli IP başlığı kabul edilir.
+
+Bootstrap ayrı owner bağlantısı kullanır; Vercel yalnızca sınırlı uygulama rolünü alır. Gerçek `.env.bootstrap` ve `.env.serverless` dosyaları Git’e eklenmez. Yönetici sırrı istemciye veya EXPO_PUBLIC değişkenine konmaz. Günlük fiziksel silme, süre sonundan sonraki temizlik aralığında gerçekleşir; cron kesintisi izlenmelidir. [Pilot rehberi](FREE_PILOT_DEPLOY.md).

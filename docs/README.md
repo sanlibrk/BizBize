@@ -17,6 +17,7 @@ Bu dizin, aynı mobil ürünün Firebase ve kendi backend uygulamalarını karş
 
 | Belge | İçerik |
 |---|---|
+| [Ücretsiz sunucusuz pilot](FREE_PILOT_DEPLOY.md) | Vercel Hobby, Neon Free, gerçek e-posta ve TestFlight hazırlığı |
 | [Backend kurulumu](BACKEND_SETUP.md) | Docker/Mailpit, yerel kullanım, üretim şablonu ve sorun giderme |
 | [Mimari özeti](ARCHITECTURE.md) | Güncel servis sınırları ve veri yaşam döngüsü |
 | [API sözleşmesi](API.md) | Hesap ve ortak alan endpoint’leri, hata ve kapasite sınırları |
